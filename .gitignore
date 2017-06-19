@@ -1,0 +1,10 @@
+.idea/
+.logs/
+
+*.swp
+*.log
+config.toml
+sqlboiler.toml
+**/rambler.json
+*.dump.sql
+mdb-links

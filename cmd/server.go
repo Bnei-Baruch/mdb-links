@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	_ "github.com/lib/pq"
 	log "github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,6 +16,8 @@ import (
 	"github.com/Bnei-Baruch/mdb-links/api"
 	"github.com/Bnei-Baruch/mdb-links/utils"
 	"github.com/Bnei-Baruch/mdb-links/version"
+	"net/url"
+	"fmt"
 )
 
 var serverCmd = &cobra.Command{
@@ -36,6 +39,18 @@ func serverFn(cmd *cobra.Command, args []string) {
 	defer mdbDB.Close()
 	boil.DebugMode = viper.GetString("server.mode") == "debug"
 
+	// Verify file service backend urls
+	backendUrls := viper.GetStringSlice("file_service.urls")
+	if len(backendUrls) == 0 {
+		panic("No file service urls found")
+	}
+	for i, x := range backendUrls {
+		if _, err := url.ParseRequestURI(x); err != nil {
+			panic(fmt.Sprintf("Bad Url [%d]: %s", i, x))
+		}
+		log.Debug(x)
+	}
+
 	// Setup Rollbar
 	rollbar.Token = viper.GetString("server.rollbar-token")
 	rollbar.Environment = viper.GetString("server.rollbar-environment")
@@ -45,7 +60,7 @@ func serverFn(cmd *cobra.Command, args []string) {
 	gin.SetMode(viper.GetString("server.mode"))
 	router := gin.New()
 	router.Use(
-		utils.DataStoresMiddleware(mdbDB),
+		utils.EnvironmentMiddleware(mdbDB, backendUrls),
 		utils.ErrorHandlingMiddleware(),
 		cors.New(cors.Config{
 			AllowMethods:     []string{"GET"},

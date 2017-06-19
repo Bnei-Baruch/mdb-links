@@ -14,10 +14,11 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
-// Set MDB & ES clients in context
-func DataStoresMiddleware(mbdDB *sql.DB) gin.HandlerFunc {
+// Set required resources for handlers in context
+func EnvironmentMiddleware(mbdDB *sql.DB, backendUrls []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("MDB_DB", mbdDB)
+		c.Set("BACKEND_URLS", backendUrls)
 		c.Next()
 	}
 }

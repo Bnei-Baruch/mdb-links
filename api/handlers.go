@@ -13,17 +13,17 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"github.com/vattle/sqlboiler/queries/qm"
 	"gopkg.in/gin-gonic/gin.v1"
 
 	"github.com/Bnei-Baruch/mdb-links/mdb/models"
+	"github.com/Bnei-Baruch/mdb-links/utils"
 )
 
 type FileBackendRequest struct {
 	SHA1     string `json:"sha1"`
 	Name     string `json:"name"`
-	ClientIP string `json:"clientip"`
+	ClientIP string `json:"clientip,omitempty"`
 }
 
 type FileBackendResponse struct {
@@ -35,138 +35,132 @@ var filerClient = &http.Client{
 }
 
 func FilesHandler(c *gin.Context) {
-	db := c.MustGet("MDB_DB").(*sql.DB)
-
 	uid := c.Param("uid")
+	uid = strings.Split(uid, ".")[0] // ignore file extension
+	if len(uid) != 8 {
+		utils.NewBadRequestError(errors.New("Invalid UID")).Abort(c)
+		return
+	}
 
-	// jwplayer needs a known file extension, so we drop it here.
-	uid = strings.Split(uid, ".")[0]
+	db := c.MustGet("MDB_DB").(*sql.DB)
+	urls := c.MustGet("BACKEND_URLS").([]string)
+	resp, err := handleFile(db, urls, uid, c.ClientIP())
+	if err != nil {
+		err.Abort(c)
+	}
 
+	c.Redirect(http.StatusFound, resp.Url)
+}
+
+func handleFile(db *sql.DB, urls []string, uid string, clientIP string) (*FileBackendResponse, *utils.HttpError) {
+	body, ex := createRequestBody(db, uid, clientIP)
+	if ex != nil {
+		return nil, ex
+	}
+
+	var err error
+	var res *http.Response
+	for i, url := range urls {
+		log.Infof("Calling backend number %d", i+1)
+		res, err = callBackend(url, body)
+		if err != nil || res.StatusCode >= http.StatusMultipleChoices {
+			continue
+		}
+		break
+	}
+
+	if err != nil {
+		return nil, utils.NewInternalError(errors.Wrapf(err, "Communication error"))
+	}
+
+	return processResponse(res)
+}
+
+func createRequestBody(db *sql.DB, uid string, clientIP string) (*bytes.Buffer, *utils.HttpError) {
 	file, err := mdbmodels.Files(db,
 		qm.Select("sha1", "content_unit_id", "name"),
 		qm.Where("uid = ?", uid)).
 		One()
 	if err != nil {
 		if err == sql.ErrNoRows {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
+			return nil, utils.NewNotFoundError()
 		} else {
-			c.AbortWithError(http.StatusInternalServerError,
-				errors.Wrap(err, "Lookup file in MDB")).
-				SetType(gin.ErrorTypePrivate)
-			return
+			return nil, utils.NewInternalError(errors.Wrap(err, "Lookup file in MDB"))
 		}
+	}
+
+	if !file.Sha1.Valid {
+		return nil, utils.NewBadRequestError(errors.New("Not a physical file"))
 	}
 
 	data := FileBackendRequest{
 		SHA1:     hex.EncodeToString(file.Sha1.Bytes),
 		Name:     file.Name,
-		ClientIP: c.ClientIP(),
+		ClientIP: clientIP,
 	}
-	log.Infof("Handle file: %s %s", uid, data.SHA1)
+
+	log.Infof("File exists in MDB: %s %s", uid, data.SHA1)
 
 	b := new(bytes.Buffer)
 	err = json.NewEncoder(b).Encode(data)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError,
-			errors.Wrap(err, "json.Encode")).
-			SetType(gin.ErrorTypePrivate)
-		return
+		return nil, utils.NewInternalError(errors.Wrap(err, "json.Encode request"))
 	}
 
-	url := viper.GetString("file_service.url1")
+	return b, nil
+}
+
+func callBackend(url string, b *bytes.Buffer) (*http.Response, error) {
 	req, err := http.NewRequest("POST", url, b)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError,
-			errors.Wrap(err, "http.NewRequest")).
-			SetType(gin.ErrorTypePrivate)
-		return
+		return nil, errors.Wrap(err, "http.NewRequest")
 	}
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 
-	res, err := filerClient.Do(req)
-	var retry = false
-	if err != nil {
-		retry = true
-		log.Errorf("Failed with first filer backend: %s", err)
-	}
-	if res.StatusCode >= http.StatusInternalServerError {
-		retry = true
-		log.Errorf("First filer backend crashed: [%d - %s] %s",
-			res.StatusCode, http.StatusText(res.StatusCode), res.Status)
-	}
+	return filerClient.Do(req)
+}
 
-	if retry {
-		url = viper.GetString("file_service.url2")
-		log.Infof("Retrying with second filer backend at %s", url)
+func processResponse(res *http.Response) (*FileBackendResponse, *utils.HttpError) {
 
-		req, err = http.NewRequest("POST", url, b)
-		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError,
-				errors.Wrap(err, "http.NewRequest")).
-				SetType(gin.ErrorTypePrivate)
-			return
-		}
-		req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-		res, err = filerClient.Do(req)
-		if err != nil {
-			log.Errorf("Failed with second filer backend: %s", err)
-			c.AbortWithError(http.StatusFailedDependency,
-				errors.Wrap(err, "Failover filer backend communication error")).
-				SetType(gin.ErrorTypePrivate)
-			return
-		}
-		if res.StatusCode >= http.StatusInternalServerError {
-			log.Errorf("Second filer backend crashed: [%d - %s] %s",
-				res.StatusCode, http.StatusText(res.StatusCode), res.Status)
-			c.AbortWithError(http.StatusFailedDependency,
-				errors.Wrap(err, "Failover filer backend server error")).
-				SetType(gin.ErrorTypePrivate)
-			return
-		}
-	}
-
+	// physical file doesn't exists
 	if res.StatusCode == http.StatusNoContent {
-		log.Infof("Filer backend no-content: %s %s", uid, data.SHA1)
-		c.AbortWithStatus(http.StatusNotFound)
-		return
+		log.Infof("Files backend no-content")
+		return nil, utils.NewNotFoundError()
 	}
 
-	switch res.StatusCode {
-	case http.StatusNoContent:
-		log.Infof("Filer backend no-content: %s %s", uid, data.SHA1)
-		c.AbortWithStatus(http.StatusNotFound)
-		return
-	case http.StatusOK:
-		defer res.Body.Close()
+	// Files backend crushed
+	if res.StatusCode >= http.StatusInternalServerError {
+		return nil, utils.NewHttpError(
+			http.StatusFailedDependency,
+			errors.Errorf("Files backend crashed: [%d - %s] %s",
+				res.StatusCode, http.StatusText(res.StatusCode), res.Status),
+			gin.ErrorTypePrivate,
+		)
+	}
+
+	defer res.Body.Close()
+
+	// Physical file exists
+	if res.StatusCode == http.StatusOK {
 		var body FileBackendResponse
-		err = json.NewDecoder(res.Body).Decode(&body)
+		err := json.NewDecoder(res.Body).Decode(&body)
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError,
-				errors.Wrap(err, "json.Decode")).
-				SetType(gin.ErrorTypePrivate)
-			return
+			return nil, utils.NewInternalError(errors.Wrap(err, "json.Decode response"))
 		}
-
-		c.Redirect(http.StatusFound, body.Url)
-		return
-	default:
-		defer res.Body.Close()
-		msg := fmt.Sprintf("Unknown filer backend status code [%d - %s] %s",
-			res.StatusCode, http.StatusText(res.StatusCode), res.Status)
-		log.Errorf(msg)
-		b, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			log.Errorf("%s Error reading res.Body: %s", msg, err)
-			c.AbortWithError(http.StatusInternalServerError, err).
-				SetType(gin.ErrorTypePrivate)
-			return
-		}
-		log.Errorf("res.Body: %s", b)
-		c.AbortWithError(http.StatusInternalServerError, errors.Errorf(msg)).
-			SetType(gin.ErrorTypePrivate)
-		return
+		return &body, nil
 	}
 
+	// Unexpected response (maybe some 400's ?)
+	// Anyway, we shouldn't be here...
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, utils.NewInternalError(errors.Wrap(err, "ioutil.ReadAll response"))
+	}
+
+	msg := fmt.Sprintf("Unexpected response [%d - %s] %s",
+		res.StatusCode, http.StatusText(res.StatusCode), res.Status)
+	log.Error(msg)
+	log.Errorf("res.Body: %s", b)
+
+	return nil, utils.NewInternalError(errors.Errorf(msg))
 }

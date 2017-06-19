@@ -47,6 +47,7 @@ func FilesHandler(c *gin.Context) {
 	resp, err := handleFile(db, urls, uid, c.ClientIP())
 	if err != nil {
 		err.Abort(c)
+		return
 	}
 
 	c.Redirect(http.StatusFound, resp.Url)

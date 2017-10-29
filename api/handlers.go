@@ -50,7 +50,11 @@ func FilesHandler(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, resp.Url)
+	if c.Request.Method == http.MethodHead {
+		c.Status(http.StatusOK)
+	} else {
+		c.Redirect(http.StatusFound, resp.Url)
+	}
 }
 
 func handleFile(db *sql.DB, urls []string, uid string, clientIP string) (*FileBackendResponse, *utils.HttpError) {

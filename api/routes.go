@@ -5,6 +5,7 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
+	router.HEAD("/:uid", FilesHandler)
 	router.GET("/:uid", FilesHandler)
 
 }

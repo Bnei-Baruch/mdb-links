@@ -30,3 +30,9 @@ The MDB read replica should be the only PoF for this service
 
 For all of the above reasons we need this service to be as thin as possible
 and the deployment should be separated from the archive site backend.
+
+
+
+## License
+
+MIT

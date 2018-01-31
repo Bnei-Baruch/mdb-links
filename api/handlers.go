@@ -53,6 +53,14 @@ func FilesHandler(c *gin.Context) {
 	if c.Request.Method == http.MethodHead {
 		c.Status(http.StatusOK)
 	} else {
+		if nr, ok := c.GetQuery("no-redirect"); ok {
+			cnr := strings.ToLower(strings.TrimSpace(nr))
+			if cnr == "t" || cnr == "true" || cnr == "1" {
+				c.JSON(http.StatusOK, resp)
+				return
+			}
+		}
+
 		c.Redirect(http.StatusFound, resp.Url)
 	}
 }

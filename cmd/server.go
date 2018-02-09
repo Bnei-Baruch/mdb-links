@@ -56,11 +56,13 @@ func serverFn(cmd *cobra.Command, args []string) {
 	rollbar.Environment = viper.GetString("server.rollbar-environment")
 	rollbar.CodeVersion = version.Version
 
+	publicOnly := viper.GetBool("permissions.public-only")
+
 	// Setup gin
 	gin.SetMode(viper.GetString("server.mode"))
 	router := gin.New()
 	router.Use(
-		utils.EnvironmentMiddleware(mdbDB, backendUrls),
+		utils.EnvironmentMiddleware(mdbDB, backendUrls, publicOnly),
 		utils.ErrorHandlingMiddleware(),
 		cors.New(cors.Config{
 			AllowMethods:     []string{"GET"},

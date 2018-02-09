@@ -44,7 +44,8 @@ func FilesHandler(c *gin.Context) {
 
 	db := c.MustGet("MDB_DB").(*sql.DB)
 	urls := c.MustGet("BACKEND_URLS").([]string)
-	resp, err := handleFile(db, urls, uid, c.ClientIP())
+	publicOnly := c.MustGet("PUBLIC_ONLY").(bool)
+	resp, err := handleFile(db, urls, uid, c.ClientIP(), publicOnly)
 	if err != nil {
 		err.Abort(c)
 		return
@@ -65,8 +66,8 @@ func FilesHandler(c *gin.Context) {
 	}
 }
 
-func handleFile(db *sql.DB, urls []string, uid string, clientIP string) (*FileBackendResponse, *utils.HttpError) {
-	body, ex := createRequestBody(db, uid, clientIP)
+func handleFile(db *sql.DB, urls []string, uid string, clientIP string, publicOnly bool) (*FileBackendResponse, *utils.HttpError) {
+	body, ex := createRequestBody(db, uid, clientIP, publicOnly)
 	if ex != nil {
 		return nil, ex
 	}
@@ -89,11 +90,17 @@ func handleFile(db *sql.DB, urls []string, uid string, clientIP string) (*FileBa
 	return processResponse(res)
 }
 
-func createRequestBody(db *sql.DB, uid string, clientIP string) (*bytes.Buffer, *utils.HttpError) {
-	file, err := mdbmodels.Files(db,
+func createRequestBody(db *sql.DB, uid string, clientIP string, publicOnly bool) (*bytes.Buffer, *utils.HttpError) {
+	mods := []qm.QueryMod{
 		qm.Select("sha1", "content_unit_id", "name"),
-		qm.Where("uid = ?", uid)).
-		One()
+		qm.Where("uid = ?", uid),
+	}
+
+	if publicOnly {
+		mods = append(mods, qm.Where("secure = 0"))
+	}
+
+	file, err := mdbmodels.Files(db, mods...).One()
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, utils.NewNotFoundError()

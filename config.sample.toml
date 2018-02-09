@@ -11,3 +11,6 @@ rollbar-environment="development"
 urls=[
   "http://files.kabbalahmedia.info/api/v1/get"
 ]
+
+[permissions]
+public-only=true

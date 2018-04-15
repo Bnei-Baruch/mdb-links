@@ -36,6 +36,12 @@ var filerClient = &http.Client{
 
 func FilesHandler(c *gin.Context) {
 	uid := c.Param("uid")
+
+	if uid == "health_check" {
+		HealthCheckHandler(c)
+		return
+	}
+
 	uid = strings.Split(uid, ".")[0] // ignore file extension
 	if len(uid) != 8 {
 		utils.NewBadRequestError(errors.New("Invalid UID")).Abort(c)

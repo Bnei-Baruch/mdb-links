@@ -13,7 +13,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
-	"github.com/vattle/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 	"gopkg.in/gin-gonic/gin.v1"
 
 	"github.com/Bnei-Baruch/mdb-links/mdb/models"

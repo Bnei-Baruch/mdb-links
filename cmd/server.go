@@ -4,20 +4,20 @@ import (
 	"database/sql"
 	"time"
 
-	_ "github.com/lib/pq"
 	log "github.com/Sirupsen/logrus"
+	_ "github.com/lib/pq"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stvp/rollbar"
-	"github.com/vattle/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/boil"
 	"gopkg.in/gin-contrib/cors.v1"
 	"gopkg.in/gin-gonic/gin.v1"
 
+	"fmt"
 	"github.com/Bnei-Baruch/mdb-links/api"
 	"github.com/Bnei-Baruch/mdb-links/utils"
 	"github.com/Bnei-Baruch/mdb-links/version"
 	"net/url"
-	"fmt"
 )
 
 var serverCmd = &cobra.Command{

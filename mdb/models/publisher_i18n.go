@@ -20,9 +20,9 @@ import (
 	"gopkg.in/volatiletech/null.v6"
 )
 
-// ContentUnitI18n is an object representing the database table.
-type ContentUnitI18n struct {
-	ContentUnitID    int64       `boil:"content_unit_id" json:"content_unit_id" toml:"content_unit_id" yaml:"content_unit_id"`
+// PublisherI18n is an object representing the database table.
+type PublisherI18n struct {
+	PublisherID      int64       `boil:"publisher_id" json:"publisher_id" toml:"publisher_id" yaml:"publisher_id"`
 	Language         string      `boil:"language" json:"language" toml:"language" yaml:"language"`
 	OriginalLanguage null.String `boil:"original_language" json:"original_language,omitempty" toml:"original_language" yaml:"original_language,omitempty"`
 	Name             null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
@@ -30,12 +30,12 @@ type ContentUnitI18n struct {
 	UserID           null.Int64  `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 	CreatedAt        time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
-	R *contentUnitI18nR `boil:"-" json:"-" toml:"-" yaml:"-"`
-	L contentUnitI18nL  `boil:"-" json:"-" toml:"-" yaml:"-"`
+	R *publisherI18nR `boil:"-" json:"-" toml:"-" yaml:"-"`
+	L publisherI18nL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
-var ContentUnitI18nColumns = struct {
-	ContentUnitID    string
+var PublisherI18nColumns = struct {
+	PublisherID      string
 	Language         string
 	OriginalLanguage string
 	Name             string
@@ -43,7 +43,7 @@ var ContentUnitI18nColumns = struct {
 	UserID           string
 	CreatedAt        string
 }{
-	ContentUnitID:    "content_unit_id",
+	PublisherID:      "publisher_id",
 	Language:         "language",
 	OriginalLanguage: "original_language",
 	Name:             "name",
@@ -52,43 +52,43 @@ var ContentUnitI18nColumns = struct {
 	CreatedAt:        "created_at",
 }
 
-// contentUnitI18nR is where relationships are stored.
-type contentUnitI18nR struct {
-	ContentUnit *ContentUnit
-	User        *User
+// publisherI18nR is where relationships are stored.
+type publisherI18nR struct {
+	Publisher *Publisher
+	User      *User
 }
 
-// contentUnitI18nL is where Load methods for each relationship are stored.
-type contentUnitI18nL struct{}
+// publisherI18nL is where Load methods for each relationship are stored.
+type publisherI18nL struct{}
 
 var (
-	contentUnitI18nColumns               = []string{"content_unit_id", "language", "original_language", "name", "description", "user_id", "created_at"}
-	contentUnitI18nColumnsWithoutDefault = []string{"content_unit_id", "language", "original_language", "name", "description", "user_id"}
-	contentUnitI18nColumnsWithDefault    = []string{"created_at"}
-	contentUnitI18nPrimaryKeyColumns     = []string{"content_unit_id", "language"}
+	publisherI18nColumns               = []string{"publisher_id", "language", "original_language", "name", "description", "user_id", "created_at"}
+	publisherI18nColumnsWithoutDefault = []string{"publisher_id", "language", "original_language", "name", "description", "user_id"}
+	publisherI18nColumnsWithDefault    = []string{"created_at"}
+	publisherI18nPrimaryKeyColumns     = []string{"publisher_id", "language"}
 )
 
 type (
-	// ContentUnitI18nSlice is an alias for a slice of pointers to ContentUnitI18n.
-	// This should generally be used opposed to []ContentUnitI18n.
-	ContentUnitI18nSlice []*ContentUnitI18n
+	// PublisherI18nSlice is an alias for a slice of pointers to PublisherI18n.
+	// This should generally be used opposed to []PublisherI18n.
+	PublisherI18nSlice []*PublisherI18n
 
-	contentUnitI18nQuery struct {
+	publisherI18nQuery struct {
 		*queries.Query
 	}
 )
 
 // Cache for insert, update and upsert
 var (
-	contentUnitI18nType                 = reflect.TypeOf(&ContentUnitI18n{})
-	contentUnitI18nMapping              = queries.MakeStructMapping(contentUnitI18nType)
-	contentUnitI18nPrimaryKeyMapping, _ = queries.BindMapping(contentUnitI18nType, contentUnitI18nMapping, contentUnitI18nPrimaryKeyColumns)
-	contentUnitI18nInsertCacheMut       sync.RWMutex
-	contentUnitI18nInsertCache          = make(map[string]insertCache)
-	contentUnitI18nUpdateCacheMut       sync.RWMutex
-	contentUnitI18nUpdateCache          = make(map[string]updateCache)
-	contentUnitI18nUpsertCacheMut       sync.RWMutex
-	contentUnitI18nUpsertCache          = make(map[string]insertCache)
+	publisherI18nType                 = reflect.TypeOf(&PublisherI18n{})
+	publisherI18nMapping              = queries.MakeStructMapping(publisherI18nType)
+	publisherI18nPrimaryKeyMapping, _ = queries.BindMapping(publisherI18nType, publisherI18nMapping, publisherI18nPrimaryKeyColumns)
+	publisherI18nInsertCacheMut       sync.RWMutex
+	publisherI18nInsertCache          = make(map[string]insertCache)
+	publisherI18nUpdateCacheMut       sync.RWMutex
+	publisherI18nUpdateCache          = make(map[string]updateCache)
+	publisherI18nUpsertCacheMut       sync.RWMutex
+	publisherI18nUpsertCache          = make(map[string]insertCache)
 )
 
 var (
@@ -98,8 +98,8 @@ var (
 	_ = bytes.MinRead
 )
 
-// OneP returns a single contentUnitI18n record from the query, and panics on error.
-func (q contentUnitI18nQuery) OneP() *ContentUnitI18n {
+// OneP returns a single publisherI18n record from the query, and panics on error.
+func (q publisherI18nQuery) OneP() *PublisherI18n {
 	o, err := q.One()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -108,9 +108,9 @@ func (q contentUnitI18nQuery) OneP() *ContentUnitI18n {
 	return o
 }
 
-// One returns a single contentUnitI18n record from the query.
-func (q contentUnitI18nQuery) One() (*ContentUnitI18n, error) {
-	o := &ContentUnitI18n{}
+// One returns a single publisherI18n record from the query.
+func (q publisherI18nQuery) One() (*PublisherI18n, error) {
+	o := &PublisherI18n{}
 
 	queries.SetLimit(q.Query, 1)
 
@@ -119,14 +119,14 @@ func (q contentUnitI18nQuery) One() (*ContentUnitI18n, error) {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "mdbmodels: failed to execute a one query for content_unit_i18n")
+		return nil, errors.Wrap(err, "mdbmodels: failed to execute a one query for publisher_i18n")
 	}
 
 	return o, nil
 }
 
-// AllP returns all ContentUnitI18n records from the query, and panics on error.
-func (q contentUnitI18nQuery) AllP() ContentUnitI18nSlice {
+// AllP returns all PublisherI18n records from the query, and panics on error.
+func (q publisherI18nQuery) AllP() PublisherI18nSlice {
 	o, err := q.All()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -135,20 +135,20 @@ func (q contentUnitI18nQuery) AllP() ContentUnitI18nSlice {
 	return o
 }
 
-// All returns all ContentUnitI18n records from the query.
-func (q contentUnitI18nQuery) All() (ContentUnitI18nSlice, error) {
-	var o []*ContentUnitI18n
+// All returns all PublisherI18n records from the query.
+func (q publisherI18nQuery) All() (PublisherI18nSlice, error) {
+	var o []*PublisherI18n
 
 	err := q.Bind(&o)
 	if err != nil {
-		return nil, errors.Wrap(err, "mdbmodels: failed to assign all query results to ContentUnitI18n slice")
+		return nil, errors.Wrap(err, "mdbmodels: failed to assign all query results to PublisherI18n slice")
 	}
 
 	return o, nil
 }
 
-// CountP returns the count of all ContentUnitI18n records in the query, and panics on error.
-func (q contentUnitI18nQuery) CountP() int64 {
+// CountP returns the count of all PublisherI18n records in the query, and panics on error.
+func (q publisherI18nQuery) CountP() int64 {
 	c, err := q.Count()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -157,8 +157,8 @@ func (q contentUnitI18nQuery) CountP() int64 {
 	return c
 }
 
-// Count returns the count of all ContentUnitI18n records in the query.
-func (q contentUnitI18nQuery) Count() (int64, error) {
+// Count returns the count of all PublisherI18n records in the query.
+func (q publisherI18nQuery) Count() (int64, error) {
 	var count int64
 
 	queries.SetSelect(q.Query, nil)
@@ -166,14 +166,14 @@ func (q contentUnitI18nQuery) Count() (int64, error) {
 
 	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "mdbmodels: failed to count content_unit_i18n rows")
+		return 0, errors.Wrap(err, "mdbmodels: failed to count publisher_i18n rows")
 	}
 
 	return count, nil
 }
 
 // Exists checks if the row exists in the table, and panics on error.
-func (q contentUnitI18nQuery) ExistsP() bool {
+func (q publisherI18nQuery) ExistsP() bool {
 	e, err := q.Exists()
 	if err != nil {
 		panic(boil.WrapErr(err))
@@ -183,7 +183,7 @@ func (q contentUnitI18nQuery) ExistsP() bool {
 }
 
 // Exists checks if the row exists in the table.
-func (q contentUnitI18nQuery) Exists() (bool, error) {
+func (q publisherI18nQuery) Exists() (bool, error) {
 	var count int64
 
 	queries.SetCount(q.Query)
@@ -191,38 +191,38 @@ func (q contentUnitI18nQuery) Exists() (bool, error) {
 
 	err := q.Query.QueryRow().Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "mdbmodels: failed to check if content_unit_i18n exists")
+		return false, errors.Wrap(err, "mdbmodels: failed to check if publisher_i18n exists")
 	}
 
 	return count > 0, nil
 }
 
-// ContentUnitG pointed to by the foreign key.
-func (o *ContentUnitI18n) ContentUnitG(mods ...qm.QueryMod) contentUnitQuery {
-	return o.ContentUnit(boil.GetDB(), mods...)
+// PublisherG pointed to by the foreign key.
+func (o *PublisherI18n) PublisherG(mods ...qm.QueryMod) publisherQuery {
+	return o.Publisher(boil.GetDB(), mods...)
 }
 
-// ContentUnit pointed to by the foreign key.
-func (o *ContentUnitI18n) ContentUnit(exec boil.Executor, mods ...qm.QueryMod) contentUnitQuery {
+// Publisher pointed to by the foreign key.
+func (o *PublisherI18n) Publisher(exec boil.Executor, mods ...qm.QueryMod) publisherQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("id=?", o.ContentUnitID),
+		qm.Where("id=?", o.PublisherID),
 	}
 
 	queryMods = append(queryMods, mods...)
 
-	query := ContentUnits(exec, queryMods...)
-	queries.SetFrom(query.Query, "\"content_units\"")
+	query := Publishers(exec, queryMods...)
+	queries.SetFrom(query.Query, "\"publishers\"")
 
 	return query
 }
 
 // UserG pointed to by the foreign key.
-func (o *ContentUnitI18n) UserG(mods ...qm.QueryMod) userQuery {
+func (o *PublisherI18n) UserG(mods ...qm.QueryMod) userQuery {
 	return o.User(boil.GetDB(), mods...)
 }
 
 // User pointed to by the foreign key.
-func (o *ContentUnitI18n) User(exec boil.Executor, mods ...qm.QueryMod) userQuery {
+func (o *PublisherI18n) User(exec boil.Executor, mods ...qm.QueryMod) userQuery {
 	queryMods := []qm.QueryMod{
 		qm.Where("id=?", o.UserID),
 	}
@@ -233,37 +233,37 @@ func (o *ContentUnitI18n) User(exec boil.Executor, mods ...qm.QueryMod) userQuer
 	queries.SetFrom(query.Query, "\"users\"")
 
 	return query
-} // LoadContentUnit allows an eager lookup of values, cached into the
+} // LoadPublisher allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (contentUnitI18nL) LoadContentUnit(e boil.Executor, singular bool, maybeContentUnitI18n interface{}) error {
-	var slice []*ContentUnitI18n
-	var object *ContentUnitI18n
+func (publisherI18nL) LoadPublisher(e boil.Executor, singular bool, maybePublisherI18n interface{}) error {
+	var slice []*PublisherI18n
+	var object *PublisherI18n
 
 	count := 1
 	if singular {
-		object = maybeContentUnitI18n.(*ContentUnitI18n)
+		object = maybePublisherI18n.(*PublisherI18n)
 	} else {
-		slice = *maybeContentUnitI18n.(*[]*ContentUnitI18n)
+		slice = *maybePublisherI18n.(*[]*PublisherI18n)
 		count = len(slice)
 	}
 
 	args := make([]interface{}, count)
 	if singular {
 		if object.R == nil {
-			object.R = &contentUnitI18nR{}
+			object.R = &publisherI18nR{}
 		}
-		args[0] = object.ContentUnitID
+		args[0] = object.PublisherID
 	} else {
 		for i, obj := range slice {
 			if obj.R == nil {
-				obj.R = &contentUnitI18nR{}
+				obj.R = &publisherI18nR{}
 			}
-			args[i] = obj.ContentUnitID
+			args[i] = obj.PublisherID
 		}
 	}
 
 	query := fmt.Sprintf(
-		"select * from \"content_units\" where \"id\" in (%s)",
+		"select * from \"publishers\" where \"id\" in (%s)",
 		strmangle.Placeholders(dialect.IndexPlaceholders, count, 1, 1),
 	)
 
@@ -273,13 +273,13 @@ func (contentUnitI18nL) LoadContentUnit(e boil.Executor, singular bool, maybeCon
 
 	results, err := e.Query(query, args...)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load ContentUnit")
+		return errors.Wrap(err, "failed to eager load Publisher")
 	}
 	defer results.Close()
 
-	var resultSlice []*ContentUnit
+	var resultSlice []*Publisher
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice ContentUnit")
+		return errors.Wrap(err, "failed to bind eager loaded slice Publisher")
 	}
 
 	if len(resultSlice) == 0 {
@@ -287,14 +287,14 @@ func (contentUnitI18nL) LoadContentUnit(e boil.Executor, singular bool, maybeCon
 	}
 
 	if singular {
-		object.R.ContentUnit = resultSlice[0]
+		object.R.Publisher = resultSlice[0]
 		return nil
 	}
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.ContentUnitID == foreign.ID {
-				local.R.ContentUnit = foreign
+			if local.PublisherID == foreign.ID {
+				local.R.Publisher = foreign
 				break
 			}
 		}
@@ -305,28 +305,28 @@ func (contentUnitI18nL) LoadContentUnit(e boil.Executor, singular bool, maybeCon
 
 // LoadUser allows an eager lookup of values, cached into the
 // loaded structs of the objects.
-func (contentUnitI18nL) LoadUser(e boil.Executor, singular bool, maybeContentUnitI18n interface{}) error {
-	var slice []*ContentUnitI18n
-	var object *ContentUnitI18n
+func (publisherI18nL) LoadUser(e boil.Executor, singular bool, maybePublisherI18n interface{}) error {
+	var slice []*PublisherI18n
+	var object *PublisherI18n
 
 	count := 1
 	if singular {
-		object = maybeContentUnitI18n.(*ContentUnitI18n)
+		object = maybePublisherI18n.(*PublisherI18n)
 	} else {
-		slice = *maybeContentUnitI18n.(*[]*ContentUnitI18n)
+		slice = *maybePublisherI18n.(*[]*PublisherI18n)
 		count = len(slice)
 	}
 
 	args := make([]interface{}, count)
 	if singular {
 		if object.R == nil {
-			object.R = &contentUnitI18nR{}
+			object.R = &publisherI18nR{}
 		}
 		args[0] = object.UserID
 	} else {
 		for i, obj := range slice {
 			if obj.R == nil {
-				obj.R = &contentUnitI18nR{}
+				obj.R = &publisherI18nR{}
 			}
 			args[i] = obj.UserID
 		}
@@ -373,38 +373,38 @@ func (contentUnitI18nL) LoadUser(e boil.Executor, singular bool, maybeContentUni
 	return nil
 }
 
-// SetContentUnitG of the content_unit_i18n to the related item.
-// Sets o.R.ContentUnit to related.
-// Adds o to related.R.ContentUnitI18ns.
+// SetPublisherG of the publisher_i18n to the related item.
+// Sets o.R.Publisher to related.
+// Adds o to related.R.PublisherI18ns.
 // Uses the global database handle.
-func (o *ContentUnitI18n) SetContentUnitG(insert bool, related *ContentUnit) error {
-	return o.SetContentUnit(boil.GetDB(), insert, related)
+func (o *PublisherI18n) SetPublisherG(insert bool, related *Publisher) error {
+	return o.SetPublisher(boil.GetDB(), insert, related)
 }
 
-// SetContentUnitP of the content_unit_i18n to the related item.
-// Sets o.R.ContentUnit to related.
-// Adds o to related.R.ContentUnitI18ns.
+// SetPublisherP of the publisher_i18n to the related item.
+// Sets o.R.Publisher to related.
+// Adds o to related.R.PublisherI18ns.
 // Panics on error.
-func (o *ContentUnitI18n) SetContentUnitP(exec boil.Executor, insert bool, related *ContentUnit) {
-	if err := o.SetContentUnit(exec, insert, related); err != nil {
+func (o *PublisherI18n) SetPublisherP(exec boil.Executor, insert bool, related *Publisher) {
+	if err := o.SetPublisher(exec, insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetContentUnitGP of the content_unit_i18n to the related item.
-// Sets o.R.ContentUnit to related.
-// Adds o to related.R.ContentUnitI18ns.
+// SetPublisherGP of the publisher_i18n to the related item.
+// Sets o.R.Publisher to related.
+// Adds o to related.R.PublisherI18ns.
 // Uses the global database handle and panics on error.
-func (o *ContentUnitI18n) SetContentUnitGP(insert bool, related *ContentUnit) {
-	if err := o.SetContentUnit(boil.GetDB(), insert, related); err != nil {
+func (o *PublisherI18n) SetPublisherGP(insert bool, related *Publisher) {
+	if err := o.SetPublisher(boil.GetDB(), insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetContentUnit of the content_unit_i18n to the related item.
-// Sets o.R.ContentUnit to related.
-// Adds o to related.R.ContentUnitI18ns.
-func (o *ContentUnitI18n) SetContentUnit(exec boil.Executor, insert bool, related *ContentUnit) error {
+// SetPublisher of the publisher_i18n to the related item.
+// Sets o.R.Publisher to related.
+// Adds o to related.R.PublisherI18ns.
+func (o *PublisherI18n) SetPublisher(exec boil.Executor, insert bool, related *Publisher) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
@@ -413,11 +413,11 @@ func (o *ContentUnitI18n) SetContentUnit(exec boil.Executor, insert bool, relate
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"content_unit_i18n\" SET %s WHERE %s",
-		strmangle.SetParamNames("\"", "\"", 1, []string{"content_unit_id"}),
-		strmangle.WhereClause("\"", "\"", 2, contentUnitI18nPrimaryKeyColumns),
+		"UPDATE \"publisher_i18n\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"publisher_id"}),
+		strmangle.WhereClause("\"", "\"", 2, publisherI18nPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ContentUnitID, o.Language}
+	values := []interface{}{related.ID, o.PublisherID, o.Language}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -428,59 +428,59 @@ func (o *ContentUnitI18n) SetContentUnit(exec boil.Executor, insert bool, relate
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.ContentUnitID = related.ID
+	o.PublisherID = related.ID
 
 	if o.R == nil {
-		o.R = &contentUnitI18nR{
-			ContentUnit: related,
+		o.R = &publisherI18nR{
+			Publisher: related,
 		}
 	} else {
-		o.R.ContentUnit = related
+		o.R.Publisher = related
 	}
 
 	if related.R == nil {
-		related.R = &contentUnitR{
-			ContentUnitI18ns: ContentUnitI18nSlice{o},
+		related.R = &publisherR{
+			PublisherI18ns: PublisherI18nSlice{o},
 		}
 	} else {
-		related.R.ContentUnitI18ns = append(related.R.ContentUnitI18ns, o)
+		related.R.PublisherI18ns = append(related.R.PublisherI18ns, o)
 	}
 
 	return nil
 }
 
-// SetUserG of the content_unit_i18n to the related item.
+// SetUserG of the publisher_i18n to the related item.
 // Sets o.R.User to related.
-// Adds o to related.R.ContentUnitI18ns.
+// Adds o to related.R.PublisherI18ns.
 // Uses the global database handle.
-func (o *ContentUnitI18n) SetUserG(insert bool, related *User) error {
+func (o *PublisherI18n) SetUserG(insert bool, related *User) error {
 	return o.SetUser(boil.GetDB(), insert, related)
 }
 
-// SetUserP of the content_unit_i18n to the related item.
+// SetUserP of the publisher_i18n to the related item.
 // Sets o.R.User to related.
-// Adds o to related.R.ContentUnitI18ns.
+// Adds o to related.R.PublisherI18ns.
 // Panics on error.
-func (o *ContentUnitI18n) SetUserP(exec boil.Executor, insert bool, related *User) {
+func (o *PublisherI18n) SetUserP(exec boil.Executor, insert bool, related *User) {
 	if err := o.SetUser(exec, insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetUserGP of the content_unit_i18n to the related item.
+// SetUserGP of the publisher_i18n to the related item.
 // Sets o.R.User to related.
-// Adds o to related.R.ContentUnitI18ns.
+// Adds o to related.R.PublisherI18ns.
 // Uses the global database handle and panics on error.
-func (o *ContentUnitI18n) SetUserGP(insert bool, related *User) {
+func (o *PublisherI18n) SetUserGP(insert bool, related *User) {
 	if err := o.SetUser(boil.GetDB(), insert, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// SetUser of the content_unit_i18n to the related item.
+// SetUser of the publisher_i18n to the related item.
 // Sets o.R.User to related.
-// Adds o to related.R.ContentUnitI18ns.
-func (o *ContentUnitI18n) SetUser(exec boil.Executor, insert bool, related *User) error {
+// Adds o to related.R.PublisherI18ns.
+func (o *PublisherI18n) SetUser(exec boil.Executor, insert bool, related *User) error {
 	var err error
 	if insert {
 		if err = related.Insert(exec); err != nil {
@@ -489,11 +489,11 @@ func (o *ContentUnitI18n) SetUser(exec boil.Executor, insert bool, related *User
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"content_unit_i18n\" SET %s WHERE %s",
+		"UPDATE \"publisher_i18n\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
-		strmangle.WhereClause("\"", "\"", 2, contentUnitI18nPrimaryKeyColumns),
+		strmangle.WhereClause("\"", "\"", 2, publisherI18nPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ContentUnitID, o.Language}
+	values := []interface{}{related.ID, o.PublisherID, o.Language}
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, updateQuery)
@@ -508,7 +508,7 @@ func (o *ContentUnitI18n) SetUser(exec boil.Executor, insert bool, related *User
 	o.UserID.Valid = true
 
 	if o.R == nil {
-		o.R = &contentUnitI18nR{
+		o.R = &publisherI18nR{
 			User: related,
 		}
 	} else {
@@ -517,10 +517,10 @@ func (o *ContentUnitI18n) SetUser(exec boil.Executor, insert bool, related *User
 
 	if related.R == nil {
 		related.R = &userR{
-			ContentUnitI18ns: ContentUnitI18nSlice{o},
+			PublisherI18ns: PublisherI18nSlice{o},
 		}
 	} else {
-		related.R.ContentUnitI18ns = append(related.R.ContentUnitI18ns, o)
+		related.R.PublisherI18ns = append(related.R.PublisherI18ns, o)
 	}
 
 	return nil
@@ -530,7 +530,7 @@ func (o *ContentUnitI18n) SetUser(exec boil.Executor, insert bool, related *User
 // Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
 // Uses the global database handle.
-func (o *ContentUnitI18n) RemoveUserG(related *User) error {
+func (o *PublisherI18n) RemoveUserG(related *User) error {
 	return o.RemoveUser(boil.GetDB(), related)
 }
 
@@ -538,7 +538,7 @@ func (o *ContentUnitI18n) RemoveUserG(related *User) error {
 // Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
 // Panics on error.
-func (o *ContentUnitI18n) RemoveUserP(exec boil.Executor, related *User) {
+func (o *PublisherI18n) RemoveUserP(exec boil.Executor, related *User) {
 	if err := o.RemoveUser(exec, related); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -548,7 +548,7 @@ func (o *ContentUnitI18n) RemoveUserP(exec boil.Executor, related *User) {
 // Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
 // Uses the global database handle and panics on error.
-func (o *ContentUnitI18n) RemoveUserGP(related *User) {
+func (o *PublisherI18n) RemoveUserGP(related *User) {
 	if err := o.RemoveUser(boil.GetDB(), related); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -557,7 +557,7 @@ func (o *ContentUnitI18n) RemoveUserGP(related *User) {
 // RemoveUser relationship.
 // Sets o.R.User to nil.
 // Removes o from all passed in related items' relationships struct (Optional).
-func (o *ContentUnitI18n) RemoveUser(exec boil.Executor, related *User) error {
+func (o *PublisherI18n) RemoveUser(exec boil.Executor, related *User) error {
 	var err error
 
 	o.UserID.Valid = false
@@ -571,40 +571,40 @@ func (o *ContentUnitI18n) RemoveUser(exec boil.Executor, related *User) error {
 		return nil
 	}
 
-	for i, ri := range related.R.ContentUnitI18ns {
+	for i, ri := range related.R.PublisherI18ns {
 		if o.UserID.Int64 != ri.UserID.Int64 {
 			continue
 		}
 
-		ln := len(related.R.ContentUnitI18ns)
+		ln := len(related.R.PublisherI18ns)
 		if ln > 1 && i < ln-1 {
-			related.R.ContentUnitI18ns[i] = related.R.ContentUnitI18ns[ln-1]
+			related.R.PublisherI18ns[i] = related.R.PublisherI18ns[ln-1]
 		}
-		related.R.ContentUnitI18ns = related.R.ContentUnitI18ns[:ln-1]
+		related.R.PublisherI18ns = related.R.PublisherI18ns[:ln-1]
 		break
 	}
 	return nil
 }
 
-// ContentUnitI18nsG retrieves all records.
-func ContentUnitI18nsG(mods ...qm.QueryMod) contentUnitI18nQuery {
-	return ContentUnitI18ns(boil.GetDB(), mods...)
+// PublisherI18nsG retrieves all records.
+func PublisherI18nsG(mods ...qm.QueryMod) publisherI18nQuery {
+	return PublisherI18ns(boil.GetDB(), mods...)
 }
 
-// ContentUnitI18ns retrieves all the records using an executor.
-func ContentUnitI18ns(exec boil.Executor, mods ...qm.QueryMod) contentUnitI18nQuery {
-	mods = append(mods, qm.From("\"content_unit_i18n\""))
-	return contentUnitI18nQuery{NewQuery(exec, mods...)}
+// PublisherI18ns retrieves all the records using an executor.
+func PublisherI18ns(exec boil.Executor, mods ...qm.QueryMod) publisherI18nQuery {
+	mods = append(mods, qm.From("\"publisher_i18n\""))
+	return publisherI18nQuery{NewQuery(exec, mods...)}
 }
 
-// FindContentUnitI18nG retrieves a single record by ID.
-func FindContentUnitI18nG(contentUnitID int64, language string, selectCols ...string) (*ContentUnitI18n, error) {
-	return FindContentUnitI18n(boil.GetDB(), contentUnitID, language, selectCols...)
+// FindPublisherI18nG retrieves a single record by ID.
+func FindPublisherI18nG(publisherID int64, language string, selectCols ...string) (*PublisherI18n, error) {
+	return FindPublisherI18n(boil.GetDB(), publisherID, language, selectCols...)
 }
 
-// FindContentUnitI18nGP retrieves a single record by ID, and panics on error.
-func FindContentUnitI18nGP(contentUnitID int64, language string, selectCols ...string) *ContentUnitI18n {
-	retobj, err := FindContentUnitI18n(boil.GetDB(), contentUnitID, language, selectCols...)
+// FindPublisherI18nGP retrieves a single record by ID, and panics on error.
+func FindPublisherI18nGP(publisherID int64, language string, selectCols ...string) *PublisherI18n {
+	retobj, err := FindPublisherI18n(boil.GetDB(), publisherID, language, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -612,35 +612,35 @@ func FindContentUnitI18nGP(contentUnitID int64, language string, selectCols ...s
 	return retobj
 }
 
-// FindContentUnitI18n retrieves a single record by ID with an executor.
+// FindPublisherI18n retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindContentUnitI18n(exec boil.Executor, contentUnitID int64, language string, selectCols ...string) (*ContentUnitI18n, error) {
-	contentUnitI18nObj := &ContentUnitI18n{}
+func FindPublisherI18n(exec boil.Executor, publisherID int64, language string, selectCols ...string) (*PublisherI18n, error) {
+	publisherI18nObj := &PublisherI18n{}
 
 	sel := "*"
 	if len(selectCols) > 0 {
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"content_unit_i18n\" where \"content_unit_id\"=$1 AND \"language\"=$2", sel,
+		"select %s from \"publisher_i18n\" where \"publisher_id\"=$1 AND \"language\"=$2", sel,
 	)
 
-	q := queries.Raw(exec, query, contentUnitID, language)
+	q := queries.Raw(exec, query, publisherID, language)
 
-	err := q.Bind(contentUnitI18nObj)
+	err := q.Bind(publisherI18nObj)
 	if err != nil {
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "mdbmodels: unable to select from content_unit_i18n")
+		return nil, errors.Wrap(err, "mdbmodels: unable to select from publisher_i18n")
 	}
 
-	return contentUnitI18nObj, nil
+	return publisherI18nObj, nil
 }
 
-// FindContentUnitI18nP retrieves a single record by ID with an executor, and panics on error.
-func FindContentUnitI18nP(exec boil.Executor, contentUnitID int64, language string, selectCols ...string) *ContentUnitI18n {
-	retobj, err := FindContentUnitI18n(exec, contentUnitID, language, selectCols...)
+// FindPublisherI18nP retrieves a single record by ID with an executor, and panics on error.
+func FindPublisherI18nP(exec boil.Executor, publisherID int64, language string, selectCols ...string) *PublisherI18n {
+	retobj, err := FindPublisherI18n(exec, publisherID, language, selectCols...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -649,13 +649,13 @@ func FindContentUnitI18nP(exec boil.Executor, contentUnitID int64, language stri
 }
 
 // InsertG a single record. See Insert for whitelist behavior description.
-func (o *ContentUnitI18n) InsertG(whitelist ...string) error {
+func (o *PublisherI18n) InsertG(whitelist ...string) error {
 	return o.Insert(boil.GetDB(), whitelist...)
 }
 
 // InsertGP a single record, and panics on error. See Insert for whitelist
 // behavior description.
-func (o *ContentUnitI18n) InsertGP(whitelist ...string) {
+func (o *PublisherI18n) InsertGP(whitelist ...string) {
 	if err := o.Insert(boil.GetDB(), whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -663,7 +663,7 @@ func (o *ContentUnitI18n) InsertGP(whitelist ...string) {
 
 // InsertP a single record using an executor, and panics on error. See Insert
 // for whitelist behavior description.
-func (o *ContentUnitI18n) InsertP(exec boil.Executor, whitelist ...string) {
+func (o *PublisherI18n) InsertP(exec boil.Executor, whitelist ...string) {
 	if err := o.Insert(exec, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -674,41 +674,41 @@ func (o *ContentUnitI18n) InsertP(exec boil.Executor, whitelist ...string) {
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
 // - All columns without a default value are included (i.e. name, age)
 // - All columns with a default, but non-zero are included (i.e. health = 75)
-func (o *ContentUnitI18n) Insert(exec boil.Executor, whitelist ...string) error {
+func (o *PublisherI18n) Insert(exec boil.Executor, whitelist ...string) error {
 	if o == nil {
-		return errors.New("mdbmodels: no content_unit_i18n provided for insertion")
+		return errors.New("mdbmodels: no publisher_i18n provided for insertion")
 	}
 
 	var err error
 
-	nzDefaults := queries.NonZeroDefaultSet(contentUnitI18nColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(publisherI18nColumnsWithDefault, o)
 
 	key := makeCacheKey(whitelist, nzDefaults)
-	contentUnitI18nInsertCacheMut.RLock()
-	cache, cached := contentUnitI18nInsertCache[key]
-	contentUnitI18nInsertCacheMut.RUnlock()
+	publisherI18nInsertCacheMut.RLock()
+	cache, cached := publisherI18nInsertCache[key]
+	publisherI18nInsertCacheMut.RUnlock()
 
 	if !cached {
 		wl, returnColumns := strmangle.InsertColumnSet(
-			contentUnitI18nColumns,
-			contentUnitI18nColumnsWithDefault,
-			contentUnitI18nColumnsWithoutDefault,
+			publisherI18nColumns,
+			publisherI18nColumnsWithDefault,
+			publisherI18nColumnsWithoutDefault,
 			nzDefaults,
 			whitelist,
 		)
 
-		cache.valueMapping, err = queries.BindMapping(contentUnitI18nType, contentUnitI18nMapping, wl)
+		cache.valueMapping, err = queries.BindMapping(publisherI18nType, publisherI18nMapping, wl)
 		if err != nil {
 			return err
 		}
-		cache.retMapping, err = queries.BindMapping(contentUnitI18nType, contentUnitI18nMapping, returnColumns)
+		cache.retMapping, err = queries.BindMapping(publisherI18nType, publisherI18nMapping, returnColumns)
 		if err != nil {
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"content_unit_i18n\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"publisher_i18n\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.IndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"content_unit_i18n\" DEFAULT VALUES"
+			cache.query = "INSERT INTO \"publisher_i18n\" DEFAULT VALUES"
 		}
 
 		var queryOutput, queryReturning string
@@ -737,72 +737,72 @@ func (o *ContentUnitI18n) Insert(exec boil.Executor, whitelist ...string) error 
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to insert into content_unit_i18n")
+		return errors.Wrap(err, "mdbmodels: unable to insert into publisher_i18n")
 	}
 
 	if !cached {
-		contentUnitI18nInsertCacheMut.Lock()
-		contentUnitI18nInsertCache[key] = cache
-		contentUnitI18nInsertCacheMut.Unlock()
+		publisherI18nInsertCacheMut.Lock()
+		publisherI18nInsertCache[key] = cache
+		publisherI18nInsertCacheMut.Unlock()
 	}
 
 	return nil
 }
 
-// UpdateG a single ContentUnitI18n record. See Update for
+// UpdateG a single PublisherI18n record. See Update for
 // whitelist behavior description.
-func (o *ContentUnitI18n) UpdateG(whitelist ...string) error {
+func (o *PublisherI18n) UpdateG(whitelist ...string) error {
 	return o.Update(boil.GetDB(), whitelist...)
 }
 
-// UpdateGP a single ContentUnitI18n record.
+// UpdateGP a single PublisherI18n record.
 // UpdateGP takes a whitelist of column names that should be updated.
 // Panics on error. See Update for whitelist behavior description.
-func (o *ContentUnitI18n) UpdateGP(whitelist ...string) {
+func (o *PublisherI18n) UpdateGP(whitelist ...string) {
 	if err := o.Update(boil.GetDB(), whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// UpdateP uses an executor to update the ContentUnitI18n, and panics on error.
+// UpdateP uses an executor to update the PublisherI18n, and panics on error.
 // See Update for whitelist behavior description.
-func (o *ContentUnitI18n) UpdateP(exec boil.Executor, whitelist ...string) {
+func (o *PublisherI18n) UpdateP(exec boil.Executor, whitelist ...string) {
 	err := o.Update(exec, whitelist...)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// Update uses an executor to update the ContentUnitI18n.
+// Update uses an executor to update the PublisherI18n.
 // Whitelist behavior: If a whitelist is provided, only the columns given are updated.
 // No whitelist behavior: Without a whitelist, columns are inferred by the following rules:
 // - All columns are inferred to start with
 // - All primary keys are subtracted from this set
 // Update does not automatically update the record in case of default values. Use .Reload()
 // to refresh the records.
-func (o *ContentUnitI18n) Update(exec boil.Executor, whitelist ...string) error {
+func (o *PublisherI18n) Update(exec boil.Executor, whitelist ...string) error {
 	var err error
 	key := makeCacheKey(whitelist, nil)
-	contentUnitI18nUpdateCacheMut.RLock()
-	cache, cached := contentUnitI18nUpdateCache[key]
-	contentUnitI18nUpdateCacheMut.RUnlock()
+	publisherI18nUpdateCacheMut.RLock()
+	cache, cached := publisherI18nUpdateCache[key]
+	publisherI18nUpdateCacheMut.RUnlock()
 
 	if !cached {
 		wl := strmangle.UpdateColumnSet(
-			contentUnitI18nColumns,
-			contentUnitI18nPrimaryKeyColumns,
+			publisherI18nColumns,
+			publisherI18nPrimaryKeyColumns,
 			whitelist,
 		)
 
 		if len(wl) == 0 {
-			return errors.New("mdbmodels: unable to update content_unit_i18n, could not build whitelist")
+			return errors.New("mdbmodels: unable to update publisher_i18n, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"content_unit_i18n\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"publisher_i18n\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
-			strmangle.WhereClause("\"", "\"", len(wl)+1, contentUnitI18nPrimaryKeyColumns),
+			strmangle.WhereClause("\"", "\"", len(wl)+1, publisherI18nPrimaryKeyColumns),
 		)
-		cache.valueMapping, err = queries.BindMapping(contentUnitI18nType, contentUnitI18nMapping, append(wl, contentUnitI18nPrimaryKeyColumns...))
+		cache.valueMapping, err = queries.BindMapping(publisherI18nType, publisherI18nMapping, append(wl, publisherI18nPrimaryKeyColumns...))
 		if err != nil {
 			return err
 		}
@@ -817,58 +817,58 @@ func (o *ContentUnitI18n) Update(exec boil.Executor, whitelist ...string) error 
 
 	_, err = exec.Exec(cache.query, values...)
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to update content_unit_i18n row")
+		return errors.Wrap(err, "mdbmodels: unable to update publisher_i18n row")
 	}
 
 	if !cached {
-		contentUnitI18nUpdateCacheMut.Lock()
-		contentUnitI18nUpdateCache[key] = cache
-		contentUnitI18nUpdateCacheMut.Unlock()
+		publisherI18nUpdateCacheMut.Lock()
+		publisherI18nUpdateCache[key] = cache
+		publisherI18nUpdateCacheMut.Unlock()
 	}
 
 	return nil
 }
 
 // UpdateAllP updates all rows with matching column names, and panics on error.
-func (q contentUnitI18nQuery) UpdateAllP(cols M) {
+func (q publisherI18nQuery) UpdateAllP(cols M) {
 	if err := q.UpdateAll(cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAll updates all rows with the specified column values.
-func (q contentUnitI18nQuery) UpdateAll(cols M) error {
+func (q publisherI18nQuery) UpdateAll(cols M) error {
 	queries.SetUpdate(q.Query, cols)
 
 	_, err := q.Query.Exec()
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to update all for content_unit_i18n")
+		return errors.Wrap(err, "mdbmodels: unable to update all for publisher_i18n")
 	}
 
 	return nil
 }
 
 // UpdateAllG updates all rows with the specified column values.
-func (o ContentUnitI18nSlice) UpdateAllG(cols M) error {
+func (o PublisherI18nSlice) UpdateAllG(cols M) error {
 	return o.UpdateAll(boil.GetDB(), cols)
 }
 
 // UpdateAllGP updates all rows with the specified column values, and panics on error.
-func (o ContentUnitI18nSlice) UpdateAllGP(cols M) {
+func (o PublisherI18nSlice) UpdateAllGP(cols M) {
 	if err := o.UpdateAll(boil.GetDB(), cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAllP updates all rows with the specified column values, and panics on error.
-func (o ContentUnitI18nSlice) UpdateAllP(exec boil.Executor, cols M) {
+func (o PublisherI18nSlice) UpdateAllP(exec boil.Executor, cols M) {
 	if err := o.UpdateAll(exec, cols); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // UpdateAll updates all rows with the specified column values, using an executor.
-func (o ContentUnitI18nSlice) UpdateAll(exec boil.Executor, cols M) error {
+func (o PublisherI18nSlice) UpdateAll(exec boil.Executor, cols M) error {
 	ln := int64(len(o))
 	if ln == 0 {
 		return nil
@@ -890,13 +890,13 @@ func (o ContentUnitI18nSlice) UpdateAll(exec boil.Executor, cols M) error {
 
 	// Append all of the primary key values for each column
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), contentUnitI18nPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), publisherI18nPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"content_unit_i18n\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"publisher_i18n\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, contentUnitI18nPrimaryKeyColumns, len(o)))
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, publisherI18nPrimaryKeyColumns, len(o)))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -905,19 +905,19 @@ func (o ContentUnitI18nSlice) UpdateAll(exec boil.Executor, cols M) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to update all in contentUnitI18n slice")
+		return errors.Wrap(err, "mdbmodels: unable to update all in publisherI18n slice")
 	}
 
 	return nil
 }
 
 // UpsertG attempts an insert, and does an update or ignore on conflict.
-func (o *ContentUnitI18n) UpsertG(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+func (o *PublisherI18n) UpsertG(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
 	return o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...)
 }
 
 // UpsertGP attempts an insert, and does an update or ignore on conflict. Panics on error.
-func (o *ContentUnitI18n) UpsertGP(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
+func (o *PublisherI18n) UpsertGP(updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
 	if err := o.Upsert(boil.GetDB(), updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -925,19 +925,19 @@ func (o *ContentUnitI18n) UpsertGP(updateOnConflict bool, conflictColumns []stri
 
 // UpsertP attempts an insert using an executor, and does an update or ignore on conflict.
 // UpsertP panics on error.
-func (o *ContentUnitI18n) UpsertP(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
+func (o *PublisherI18n) UpsertP(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) {
 	if err := o.Upsert(exec, updateOnConflict, conflictColumns, updateColumns, whitelist...); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
-func (o *ContentUnitI18n) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
+func (o *PublisherI18n) Upsert(exec boil.Executor, updateOnConflict bool, conflictColumns []string, updateColumns []string, whitelist ...string) error {
 	if o == nil {
-		return errors.New("mdbmodels: no content_unit_i18n provided for upsert")
+		return errors.New("mdbmodels: no publisher_i18n provided for upsert")
 	}
 
-	nzDefaults := queries.NonZeroDefaultSet(contentUnitI18nColumnsWithDefault, o)
+	nzDefaults := queries.NonZeroDefaultSet(publisherI18nColumnsWithDefault, o)
 
 	// Build cache key in-line uglily - mysql vs postgres problems
 	buf := strmangle.GetBuffer()
@@ -966,43 +966,43 @@ func (o *ContentUnitI18n) Upsert(exec boil.Executor, updateOnConflict bool, conf
 	key := buf.String()
 	strmangle.PutBuffer(buf)
 
-	contentUnitI18nUpsertCacheMut.RLock()
-	cache, cached := contentUnitI18nUpsertCache[key]
-	contentUnitI18nUpsertCacheMut.RUnlock()
+	publisherI18nUpsertCacheMut.RLock()
+	cache, cached := publisherI18nUpsertCache[key]
+	publisherI18nUpsertCacheMut.RUnlock()
 
 	var err error
 
 	if !cached {
 		insert, ret := strmangle.InsertColumnSet(
-			contentUnitI18nColumns,
-			contentUnitI18nColumnsWithDefault,
-			contentUnitI18nColumnsWithoutDefault,
+			publisherI18nColumns,
+			publisherI18nColumnsWithDefault,
+			publisherI18nColumnsWithoutDefault,
 			nzDefaults,
 			whitelist,
 		)
 
 		update := strmangle.UpdateColumnSet(
-			contentUnitI18nColumns,
-			contentUnitI18nPrimaryKeyColumns,
+			publisherI18nColumns,
+			publisherI18nPrimaryKeyColumns,
 			updateColumns,
 		)
 		if len(update) == 0 {
-			return errors.New("mdbmodels: unable to upsert content_unit_i18n, could not build update column list")
+			return errors.New("mdbmodels: unable to upsert publisher_i18n, could not build update column list")
 		}
 
 		conflict := conflictColumns
 		if len(conflict) == 0 {
-			conflict = make([]string, len(contentUnitI18nPrimaryKeyColumns))
-			copy(conflict, contentUnitI18nPrimaryKeyColumns)
+			conflict = make([]string, len(publisherI18nPrimaryKeyColumns))
+			copy(conflict, publisherI18nPrimaryKeyColumns)
 		}
-		cache.query = queries.BuildUpsertQueryPostgres(dialect, "\"content_unit_i18n\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = queries.BuildUpsertQueryPostgres(dialect, "\"publisher_i18n\"", updateOnConflict, ret, update, conflict, insert)
 
-		cache.valueMapping, err = queries.BindMapping(contentUnitI18nType, contentUnitI18nMapping, insert)
+		cache.valueMapping, err = queries.BindMapping(publisherI18nType, publisherI18nMapping, insert)
 		if err != nil {
 			return err
 		}
 		if len(ret) != 0 {
-			cache.retMapping, err = queries.BindMapping(contentUnitI18nType, contentUnitI18nMapping, ret)
+			cache.retMapping, err = queries.BindMapping(publisherI18nType, publisherI18nMapping, ret)
 			if err != nil {
 				return err
 			}
@@ -1030,55 +1030,55 @@ func (o *ContentUnitI18n) Upsert(exec boil.Executor, updateOnConflict bool, conf
 		_, err = exec.Exec(cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to upsert content_unit_i18n")
+		return errors.Wrap(err, "mdbmodels: unable to upsert publisher_i18n")
 	}
 
 	if !cached {
-		contentUnitI18nUpsertCacheMut.Lock()
-		contentUnitI18nUpsertCache[key] = cache
-		contentUnitI18nUpsertCacheMut.Unlock()
+		publisherI18nUpsertCacheMut.Lock()
+		publisherI18nUpsertCache[key] = cache
+		publisherI18nUpsertCacheMut.Unlock()
 	}
 
 	return nil
 }
 
-// DeleteP deletes a single ContentUnitI18n record with an executor.
+// DeleteP deletes a single PublisherI18n record with an executor.
 // DeleteP will match against the primary key column to find the record to delete.
 // Panics on error.
-func (o *ContentUnitI18n) DeleteP(exec boil.Executor) {
+func (o *PublisherI18n) DeleteP(exec boil.Executor) {
 	if err := o.Delete(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// DeleteG deletes a single ContentUnitI18n record.
+// DeleteG deletes a single PublisherI18n record.
 // DeleteG will match against the primary key column to find the record to delete.
-func (o *ContentUnitI18n) DeleteG() error {
+func (o *PublisherI18n) DeleteG() error {
 	if o == nil {
-		return errors.New("mdbmodels: no ContentUnitI18n provided for deletion")
+		return errors.New("mdbmodels: no PublisherI18n provided for deletion")
 	}
 
 	return o.Delete(boil.GetDB())
 }
 
-// DeleteGP deletes a single ContentUnitI18n record.
+// DeleteGP deletes a single PublisherI18n record.
 // DeleteGP will match against the primary key column to find the record to delete.
 // Panics on error.
-func (o *ContentUnitI18n) DeleteGP() {
+func (o *PublisherI18n) DeleteGP() {
 	if err := o.DeleteG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
-// Delete deletes a single ContentUnitI18n record with an executor.
+// Delete deletes a single PublisherI18n record with an executor.
 // Delete will match against the primary key column to find the record to delete.
-func (o *ContentUnitI18n) Delete(exec boil.Executor) error {
+func (o *PublisherI18n) Delete(exec boil.Executor) error {
 	if o == nil {
-		return errors.New("mdbmodels: no ContentUnitI18n provided for delete")
+		return errors.New("mdbmodels: no PublisherI18n provided for delete")
 	}
 
-	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), contentUnitI18nPrimaryKeyMapping)
-	sql := "DELETE FROM \"content_unit_i18n\" WHERE \"content_unit_id\"=$1 AND \"language\"=$2"
+	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), publisherI18nPrimaryKeyMapping)
+	sql := "DELETE FROM \"publisher_i18n\" WHERE \"publisher_id\"=$1 AND \"language\"=$2"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1087,61 +1087,61 @@ func (o *ContentUnitI18n) Delete(exec boil.Executor) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to delete from content_unit_i18n")
+		return errors.Wrap(err, "mdbmodels: unable to delete from publisher_i18n")
 	}
 
 	return nil
 }
 
 // DeleteAllP deletes all rows, and panics on error.
-func (q contentUnitI18nQuery) DeleteAllP() {
+func (q publisherI18nQuery) DeleteAllP() {
 	if err := q.DeleteAll(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAll deletes all matching rows.
-func (q contentUnitI18nQuery) DeleteAll() error {
+func (q publisherI18nQuery) DeleteAll() error {
 	if q.Query == nil {
-		return errors.New("mdbmodels: no contentUnitI18nQuery provided for delete all")
+		return errors.New("mdbmodels: no publisherI18nQuery provided for delete all")
 	}
 
 	queries.SetDelete(q.Query)
 
 	_, err := q.Query.Exec()
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to delete all from content_unit_i18n")
+		return errors.Wrap(err, "mdbmodels: unable to delete all from publisher_i18n")
 	}
 
 	return nil
 }
 
 // DeleteAllGP deletes all rows in the slice, and panics on error.
-func (o ContentUnitI18nSlice) DeleteAllGP() {
+func (o PublisherI18nSlice) DeleteAllGP() {
 	if err := o.DeleteAllG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAllG deletes all rows in the slice.
-func (o ContentUnitI18nSlice) DeleteAllG() error {
+func (o PublisherI18nSlice) DeleteAllG() error {
 	if o == nil {
-		return errors.New("mdbmodels: no ContentUnitI18n slice provided for delete all")
+		return errors.New("mdbmodels: no PublisherI18n slice provided for delete all")
 	}
 	return o.DeleteAll(boil.GetDB())
 }
 
 // DeleteAllP deletes all rows in the slice, using an executor, and panics on error.
-func (o ContentUnitI18nSlice) DeleteAllP(exec boil.Executor) {
+func (o PublisherI18nSlice) DeleteAllP(exec boil.Executor) {
 	if err := o.DeleteAll(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // DeleteAll deletes all rows in the slice, using an executor.
-func (o ContentUnitI18nSlice) DeleteAll(exec boil.Executor) error {
+func (o PublisherI18nSlice) DeleteAll(exec boil.Executor) error {
 	if o == nil {
-		return errors.New("mdbmodels: no ContentUnitI18n slice provided for delete all")
+		return errors.New("mdbmodels: no PublisherI18n slice provided for delete all")
 	}
 
 	if len(o) == 0 {
@@ -1150,12 +1150,12 @@ func (o ContentUnitI18nSlice) DeleteAll(exec boil.Executor) error {
 
 	var args []interface{}
 	for _, obj := range o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), contentUnitI18nPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), publisherI18nPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"content_unit_i18n\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, contentUnitI18nPrimaryKeyColumns, len(o))
+	sql := "DELETE FROM \"publisher_i18n\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, publisherI18nPrimaryKeyColumns, len(o))
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
@@ -1164,30 +1164,30 @@ func (o ContentUnitI18nSlice) DeleteAll(exec boil.Executor) error {
 
 	_, err := exec.Exec(sql, args...)
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to delete all from contentUnitI18n slice")
+		return errors.Wrap(err, "mdbmodels: unable to delete all from publisherI18n slice")
 	}
 
 	return nil
 }
 
 // ReloadGP refetches the object from the database and panics on error.
-func (o *ContentUnitI18n) ReloadGP() {
+func (o *PublisherI18n) ReloadGP() {
 	if err := o.ReloadG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // ReloadP refetches the object from the database with an executor. Panics on error.
-func (o *ContentUnitI18n) ReloadP(exec boil.Executor) {
+func (o *PublisherI18n) ReloadP(exec boil.Executor) {
 	if err := o.Reload(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
 }
 
 // ReloadG refetches the object from the database using the primary keys.
-func (o *ContentUnitI18n) ReloadG() error {
+func (o *PublisherI18n) ReloadG() error {
 	if o == nil {
-		return errors.New("mdbmodels: no ContentUnitI18n provided for reload")
+		return errors.New("mdbmodels: no PublisherI18n provided for reload")
 	}
 
 	return o.Reload(boil.GetDB())
@@ -1195,8 +1195,8 @@ func (o *ContentUnitI18n) ReloadG() error {
 
 // Reload refetches the object from the database
 // using the primary keys with an executor.
-func (o *ContentUnitI18n) Reload(exec boil.Executor) error {
-	ret, err := FindContentUnitI18n(exec, o.ContentUnitID, o.Language)
+func (o *PublisherI18n) Reload(exec boil.Executor) error {
+	ret, err := FindPublisherI18n(exec, o.PublisherID, o.Language)
 	if err != nil {
 		return err
 	}
@@ -1208,7 +1208,7 @@ func (o *ContentUnitI18n) Reload(exec boil.Executor) error {
 // ReloadAllGP refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 // Panics on error.
-func (o *ContentUnitI18nSlice) ReloadAllGP() {
+func (o *PublisherI18nSlice) ReloadAllGP() {
 	if err := o.ReloadAllG(); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1217,7 +1217,7 @@ func (o *ContentUnitI18nSlice) ReloadAllGP() {
 // ReloadAllP refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
 // Panics on error.
-func (o *ContentUnitI18nSlice) ReloadAllP(exec boil.Executor) {
+func (o *PublisherI18nSlice) ReloadAllP(exec boil.Executor) {
 	if err := o.ReloadAll(exec); err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1225,9 +1225,9 @@ func (o *ContentUnitI18nSlice) ReloadAllP(exec boil.Executor) {
 
 // ReloadAllG refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ContentUnitI18nSlice) ReloadAllG() error {
+func (o *PublisherI18nSlice) ReloadAllG() error {
 	if o == nil {
-		return errors.New("mdbmodels: empty ContentUnitI18nSlice provided for reload all")
+		return errors.New("mdbmodels: empty PublisherI18nSlice provided for reload all")
 	}
 
 	return o.ReloadAll(boil.GetDB())
@@ -1235,61 +1235,61 @@ func (o *ContentUnitI18nSlice) ReloadAllG() error {
 
 // ReloadAll refetches every row with matching primary key column values
 // and overwrites the original object slice with the newly updated slice.
-func (o *ContentUnitI18nSlice) ReloadAll(exec boil.Executor) error {
+func (o *PublisherI18nSlice) ReloadAll(exec boil.Executor) error {
 	if o == nil || len(*o) == 0 {
 		return nil
 	}
 
-	contentUnitI18ns := ContentUnitI18nSlice{}
+	publisherI18ns := PublisherI18nSlice{}
 	var args []interface{}
 	for _, obj := range *o {
-		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), contentUnitI18nPrimaryKeyMapping)
+		pkeyArgs := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(obj)), publisherI18nPrimaryKeyMapping)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"content_unit_i18n\".* FROM \"content_unit_i18n\" WHERE " +
-		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, contentUnitI18nPrimaryKeyColumns, len(*o))
+	sql := "SELECT \"publisher_i18n\".* FROM \"publisher_i18n\" WHERE " +
+		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, publisherI18nPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(exec, sql, args...)
 
-	err := q.Bind(&contentUnitI18ns)
+	err := q.Bind(&publisherI18ns)
 	if err != nil {
-		return errors.Wrap(err, "mdbmodels: unable to reload all in ContentUnitI18nSlice")
+		return errors.Wrap(err, "mdbmodels: unable to reload all in PublisherI18nSlice")
 	}
 
-	*o = contentUnitI18ns
+	*o = publisherI18ns
 
 	return nil
 }
 
-// ContentUnitI18nExists checks if the ContentUnitI18n row exists.
-func ContentUnitI18nExists(exec boil.Executor, contentUnitID int64, language string) (bool, error) {
+// PublisherI18nExists checks if the PublisherI18n row exists.
+func PublisherI18nExists(exec boil.Executor, publisherID int64, language string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"content_unit_i18n\" where \"content_unit_id\"=$1 AND \"language\"=$2 limit 1)"
+	sql := "select exists(select 1 from \"publisher_i18n\" where \"publisher_id\"=$1 AND \"language\"=$2 limit 1)"
 
 	if boil.DebugMode {
 		fmt.Fprintln(boil.DebugWriter, sql)
-		fmt.Fprintln(boil.DebugWriter, contentUnitID, language)
+		fmt.Fprintln(boil.DebugWriter, publisherID, language)
 	}
 
-	row := exec.QueryRow(sql, contentUnitID, language)
+	row := exec.QueryRow(sql, publisherID, language)
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "mdbmodels: unable to check if content_unit_i18n exists")
+		return false, errors.Wrap(err, "mdbmodels: unable to check if publisher_i18n exists")
 	}
 
 	return exists, nil
 }
 
-// ContentUnitI18nExistsG checks if the ContentUnitI18n row exists.
-func ContentUnitI18nExistsG(contentUnitID int64, language string) (bool, error) {
-	return ContentUnitI18nExists(boil.GetDB(), contentUnitID, language)
+// PublisherI18nExistsG checks if the PublisherI18n row exists.
+func PublisherI18nExistsG(publisherID int64, language string) (bool, error) {
+	return PublisherI18nExists(boil.GetDB(), publisherID, language)
 }
 
-// ContentUnitI18nExistsGP checks if the ContentUnitI18n row exists. Panics on error.
-func ContentUnitI18nExistsGP(contentUnitID int64, language string) bool {
-	e, err := ContentUnitI18nExists(boil.GetDB(), contentUnitID, language)
+// PublisherI18nExistsGP checks if the PublisherI18n row exists. Panics on error.
+func PublisherI18nExistsGP(publisherID int64, language string) bool {
+	e, err := PublisherI18nExists(boil.GetDB(), publisherID, language)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}
@@ -1297,9 +1297,9 @@ func ContentUnitI18nExistsGP(contentUnitID int64, language string) bool {
 	return e
 }
 
-// ContentUnitI18nExistsP checks if the ContentUnitI18n row exists. Panics on error.
-func ContentUnitI18nExistsP(exec boil.Executor, contentUnitID int64, language string) bool {
-	e, err := ContentUnitI18nExists(exec, contentUnitID, language)
+// PublisherI18nExistsP checks if the PublisherI18n row exists. Panics on error.
+func PublisherI18nExistsP(exec boil.Executor, publisherID int64, language string) bool {
+	e, err := PublisherI18nExists(exec, publisherID, language)
 	if err != nil {
 		panic(boil.WrapErr(err))
 	}

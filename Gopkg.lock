@@ -84,11 +84,6 @@
   revision = "d0303fe809921458f417bcf828397a65db30a7e4"
 
 [[projects]]
-  name = "github.com/nullbio/inflect"
-  packages = ["."]
-  revision = "0563860d9a8cd788af0f5243761d841239d23ab2"
-
-[[projects]]
   name = "github.com/pelletier/go-buffruneio"
   packages = ["."]
   revision = "c37440a7cf42ac63b919c752ca73a85067e05992"
@@ -145,14 +140,21 @@
   revision = "3eb4713e2655cd1be805795be31b3f85b74b05fd"
 
 [[projects]]
-  name = "github.com/vattle/sqlboiler"
+  branch = "master"
+  name = "github.com/volatiletech/inflect"
+  packages = ["."]
+  revision = "e7201282ae8da26cd97aed2e516f75c0bd91bb93"
+
+[[projects]]
+  name = "github.com/volatiletech/sqlboiler"
   packages = [
     "boil",
     "queries",
     "queries/qm",
     "strmangle"
   ]
-  revision = "553cc9f680011fad9aa999e19e87bf9d76fbcf12"
+  revision = "7e0eca627f995e2476d637ada0c3b70ecb5d837c"
+  version = "v2.6.1"
 
 [[projects]]
   name = "golang.org/x/net"
@@ -195,13 +197,13 @@
   version = "v8.18.1"
 
 [[projects]]
-  name = "gopkg.in/nullbio/null.v6"
+  name = "gopkg.in/volatiletech/null.v6"
   packages = [
     ".",
     "convert"
   ]
-  revision = "40264a2e6b7972d183906cf17663983c23231c82"
-  version = "v6.3"
+  revision = "0bef4e07ae1b27a2a4efa23bbb3006c8c3d2e01d"
+  version = "v6.4"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -211,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c983aaf5c6ec8b9cd566df62a341b6d5e2abe7c67e6d72c4c2f6cf457d22b66d"
+  inputs-digest = "062d352a47b90f5621a531826d92d1ad5591a60b46eaa51278e6863798d0f94f"
   solver-name = "gps-cdcl"
   solver-version = 1

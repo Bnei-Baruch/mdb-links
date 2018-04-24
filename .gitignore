@@ -7,4 +7,7 @@ config.toml
 sqlboiler.toml
 **/rambler.json
 *.dump.sql
+
+_vendor-*/
+
 mdb-links

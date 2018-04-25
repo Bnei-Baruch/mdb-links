@@ -27,7 +27,8 @@ type FileBackendRequest struct {
 }
 
 type FileBackendResponse struct {
-	Url string `json:"url"`
+	Url           string `json:"url"`
+	IsAlternative bool   `json:"alternative"`
 }
 
 var filerClient = &http.Client{
@@ -42,16 +43,7 @@ func FilesHandler(c *gin.Context) {
 		return
 	}
 
-	uid = strings.Split(uid, ".")[0] // ignore file extension
-	if len(uid) != 8 {
-		utils.NewBadRequestError(errors.New("Invalid UID")).Abort(c)
-		return
-	}
-
-	db := c.MustGet("MDB_DB").(*sql.DB)
-	urls := c.MustGet("BACKEND_URLS").([]string)
-	publicOnly := c.MustGet("PUBLIC_ONLY").(bool)
-	resp, err := handleFile(db, urls, uid, c.ClientIP(), publicOnly)
+	resp, err := handleFile(c, uid, c.ClientIP())
 	if err != nil {
 		err.Abort(c)
 		return
@@ -60,6 +52,7 @@ func FilesHandler(c *gin.Context) {
 	if c.Request.Method == http.MethodHead {
 		c.Status(http.StatusOK)
 	} else {
+		// client asked not to be redirected
 		if nr, ok := c.GetQuery("no-redirect"); ok {
 			cnr := strings.ToLower(strings.TrimSpace(nr))
 			if cnr == "t" || cnr == "true" || cnr == "1" {
@@ -68,18 +61,53 @@ func FilesHandler(c *gin.Context) {
 			}
 		}
 
-		c.Redirect(http.StatusFound, resp.Url)
+		// redirect type based on alternative status
+		code := http.StatusFound
+		if resp.IsAlternative {
+			code = http.StatusMovedPermanently
+		}
+
+		c.Redirect(code, resp.Url)
 	}
 }
 
-func handleFile(db *sql.DB, urls []string, uid string, clientIP string, publicOnly bool) (*FileBackendResponse, *utils.HttpError) {
-	body, ex := createRequestBody(db, uid, clientIP, publicOnly)
-	if ex != nil {
-		return nil, ex
+func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*FileBackendResponse, *utils.HttpError) {
+	s := strings.Split(uidParam, ".") // strip file extension if provided
+	uid := s[0]
+	if len(uid) != 8 {
+		return nil, utils.NewBadRequestError(errors.Errorf("Invalid UID: %s", uid))
+	}
+
+	db := cp.MustGet("MDB_DB").(*sql.DB)
+	publicOnly := cp.MustGet("PUBLIC_ONLY").(bool)
+
+	file, herr := lookupFile(db, uid, publicOnly)
+	if herr != nil {
+		return nil, herr
+	}
+
+	// are we redirecting to alternative file ?
+	if file.UID != uid {
+		resp := new(FileBackendResponse)
+		baseUrl := cp.MustGet("BASE_URL").(string)
+		ext := ""
+		if len(s) > 1 {
+			ext = fmt.Sprintf(".%s", strings.Join(s[1:], "."))
+		}
+		resp.Url = fmt.Sprintf("%s%s%s", baseUrl, file.UID, ext)
+		resp.IsAlternative = true
+		return resp, nil
+	}
+
+	// File seems reasonable. Proceed to filer backend
+	body, herr := createRequestBody(file, clientIP)
+	if herr != nil {
+		return nil, herr
 	}
 
 	var err error
 	var res *http.Response
+	urls := cp.MustGet("BACKEND_URLS").([]string)
 	for i, url := range urls {
 		log.Infof("Calling backend number %d", i+1)
 		res, err = callBackend(url, body)
@@ -96,9 +124,9 @@ func handleFile(db *sql.DB, urls []string, uid string, clientIP string, publicOn
 	return processResponse(res)
 }
 
-func createRequestBody(db *sql.DB, uid string, clientIP string, publicOnly bool) (*bytes.Buffer, *utils.HttpError) {
+func lookupFile(db *sql.DB, uid string, publicOnly bool) (*mdbmodels.File, *utils.HttpError) {
 	mods := []qm.QueryMod{
-		qm.Select("sha1", "content_unit_id", "name"),
+		qm.Select("id", "sha1", "content_unit_id", "name", "removed_at"),
 		qm.Where("uid = ?", uid),
 	}
 
@@ -119,17 +147,64 @@ func createRequestBody(db *sql.DB, uid string, clientIP string, publicOnly bool)
 		return nil, utils.NewBadRequestError(errors.New("Not a physical file"))
 	}
 
+	if file.RemovedAt.Valid {
+		log.Infof("File removed, look for alternative: %s", uid)
+		file, err = lookupAlternative(file, db)
+		if err != nil {
+			return nil, utils.NewInternalError(errors.Wrap(err, "Lookup alternative file in MDB"))
+		}
+		if file == nil {
+			log.Infof("No alternative file found")
+			return nil, utils.NewNotFoundError()
+		}
+	}
+
+	return file, nil
+}
+
+func lookupAlternative(file *mdbmodels.File, db *sql.DB) (*mdbmodels.File, error) {
+	if err := file.Reload(db); err != nil {
+		return nil, errors.Wrap(err, "reload file from MDB")
+	}
+
+	// alternative lookup makes sense only inside content units
+	if !file.ContentUnitID.Valid {
+		return nil, nil
+	}
+
+	mods := []qm.QueryMod{
+		qm.Select("uid"),
+		qm.Where("sha1 IS NOT NULL AND removed_at IS NULL"),     // physical, not removed file
+		qm.And("id <> ?", file.ID),                              // not this file
+		qm.And("secure <= ?", file.Secure),                      // at least secure as this one
+		qm.And("published = ?", file.Published),                 // same published status
+		qm.And("content_unit_id = ?", file.ContentUnitID.Int64), // in the same unit
+		qm.And("type = ?", file.Type),                           // same type
+		qm.And("language = ?", file.Language.String),            // same language
+		qm.OrderBy("created_at desc"),                           // solves most mime_type / sub_type conflicts
+	}
+
+	alts, err := mdbmodels.Files(db, mods...).All()
+	if err != nil {
+		return nil, errors.Wrap(err, "fetch alternative files from MDB")
+	}
+
+	if len(alts) == 0 {
+		return nil, nil
+	}
+
+	return alts[0], nil
+}
+
+func createRequestBody(file *mdbmodels.File, clientIP string) (*bytes.Buffer, *utils.HttpError) {
 	data := FileBackendRequest{
 		SHA1:     hex.EncodeToString(file.Sha1.Bytes),
 		Name:     file.Name,
 		ClientIP: clientIP,
 	}
 
-	log.Infof("File exists in MDB: %s %s", uid, data.SHA1)
-
 	b := new(bytes.Buffer)
-	err = json.NewEncoder(b).Encode(data)
-	if err != nil {
+	if err := json.NewEncoder(b).Encode(data); err != nil {
 		return nil, utils.NewInternalError(errors.Wrap(err, "json.Encode request"))
 	}
 

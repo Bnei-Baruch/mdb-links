@@ -6,6 +6,7 @@ bind-address=":8081"
 mode="debug"  # GIN mode. Either debug, release or test
 rollbar-token=""
 rollbar-environment="development"
+base-url="http://localhost:8081/"
 
 [file_service]
 urls=[

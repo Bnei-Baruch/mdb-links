@@ -40,3 +40,8 @@ func ConvertArgsString(args []string) []interface{} {
 	}
 	return c
 }
+
+type ContextProvider interface {
+	Get(key string) (interface{}, bool)
+	MustGet(key string) interface{}
+}

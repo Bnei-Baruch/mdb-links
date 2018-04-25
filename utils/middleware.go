@@ -15,11 +15,12 @@ import (
 )
 
 // Set required resources for handlers in context
-func EnvironmentMiddleware(mbdDB *sql.DB, backendUrls []string, publicOnly bool) gin.HandlerFunc {
+func EnvironmentMiddleware(mbdDB *sql.DB, backendUrls []string, publicOnly bool, baseUrl string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("MDB_DB", mbdDB)
 		c.Set("BACKEND_URLS", backendUrls)
 		c.Set("PUBLIC_ONLY", publicOnly)
+		c.Set("BASE_URL", baseUrl)
 		c.Next()
 	}
 }

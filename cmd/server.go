@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"database/sql"
+	"fmt"
+	"net/url"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -13,11 +15,9 @@ import (
 	"gopkg.in/gin-contrib/cors.v1"
 	"gopkg.in/gin-gonic/gin.v1"
 
-	"fmt"
 	"github.com/Bnei-Baruch/mdb-links/api"
 	"github.com/Bnei-Baruch/mdb-links/utils"
 	"github.com/Bnei-Baruch/mdb-links/version"
-	"net/url"
 )
 
 var serverCmd = &cobra.Command{
@@ -39,30 +39,35 @@ func serverFn(cmd *cobra.Command, args []string) {
 	defer mdbDB.Close()
 	boil.DebugMode = viper.GetString("server.mode") == "debug"
 
-	// Verify file service backend urls
+	// read and validate config
 	backendUrls := viper.GetStringSlice("file_service.urls")
 	if len(backendUrls) == 0 {
 		panic("No file service urls found")
 	}
 	for i, x := range backendUrls {
 		if _, err := url.ParseRequestURI(x); err != nil {
-			panic(fmt.Sprintf("Bad Url [%d]: %s", i, x))
+			panic(fmt.Sprintf("Bad file_service.urls[%d]: %s", i, x))
 		}
 		log.Debug(x)
 	}
+
+	baseUrl := viper.GetString("server.base-url")
+	if _, err := url.ParseRequestURI(baseUrl); err != nil {
+		panic(fmt.Sprintf("Bad server.base-url: %s", baseUrl))
+	}
+
+	publicOnly := viper.GetBool("permissions.public-only")
 
 	// Setup Rollbar
 	rollbar.Token = viper.GetString("server.rollbar-token")
 	rollbar.Environment = viper.GetString("server.rollbar-environment")
 	rollbar.CodeVersion = version.Version
 
-	publicOnly := viper.GetBool("permissions.public-only")
-
 	// Setup gin
 	gin.SetMode(viper.GetString("server.mode"))
 	router := gin.New()
 	router.Use(
-		utils.EnvironmentMiddleware(mdbDB, backendUrls, publicOnly),
+		utils.EnvironmentMiddleware(mdbDB, backendUrls, publicOnly, baseUrl),
 		utils.ErrorHandlingMiddleware(),
 		cors.New(cors.Config{
 			AllowMethods:     []string{"GET"},

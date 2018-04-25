@@ -126,7 +126,7 @@ func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*Fi
 
 func lookupFile(db *sql.DB, uid string, publicOnly bool) (*mdbmodels.File, *utils.HttpError) {
 	mods := []qm.QueryMod{
-		qm.Select("id", "sha1", "content_unit_id", "name", "removed_at"),
+		qm.Select("id", "uid", "sha1", "content_unit_id", "name", "removed_at"),
 		qm.Where("uid = ?", uid),
 	}
 

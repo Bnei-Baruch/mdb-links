@@ -224,7 +224,7 @@ func callBackend(url string, b *bytes.Buffer) (*http.Response, error) {
 func processResponse(res *http.Response) (*FileBackendResponse, *utils.HttpError) {
 
 	// physical file doesn't exists
-	if res.StatusCode == http.StatusNoContent {
+	if res.StatusCode == http.StatusNotFound {
 		log.Infof("Files backend no-content")
 		return nil, utils.NewNotFoundError()
 	}

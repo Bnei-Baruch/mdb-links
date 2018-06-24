@@ -49,26 +49,22 @@ func FilesHandler(c *gin.Context) {
 		return
 	}
 
-	if c.Request.Method == http.MethodHead {
-		c.Status(http.StatusOK)
-	} else {
-		// client asked not to be redirected
-		if nr, ok := c.GetQuery("no-redirect"); ok {
-			cnr := strings.ToLower(strings.TrimSpace(nr))
-			if cnr == "t" || cnr == "true" || cnr == "1" {
-				c.JSON(http.StatusOK, resp)
-				return
-			}
+	// client asked not to be redirected
+	if nr, ok := c.GetQuery("no-redirect"); ok {
+		cnr := strings.ToLower(strings.TrimSpace(nr))
+		if cnr == "t" || cnr == "true" || cnr == "1" {
+			c.JSON(http.StatusOK, resp)
+			return
 		}
-
-		// redirect type based on alternative status
-		code := http.StatusFound
-		if resp.IsAlternative {
-			code = http.StatusMovedPermanently
-		}
-
-		c.Redirect(code, resp.Url)
 	}
+
+	// redirect type based on alternative status
+	code := http.StatusFound
+	if resp.IsAlternative {
+		code = http.StatusMovedPermanently
+	}
+
+	c.Redirect(code, resp.Url)
 }
 
 func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*FileBackendResponse, *utils.HttpError) {

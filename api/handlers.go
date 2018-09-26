@@ -96,7 +96,9 @@ func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*Fi
 	}
 
 	// File seems reasonable. Proceed to filer backend
-	body, herr := createRequestBody(file, clientIP)
+	sha1sum := hex.EncodeToString(file.Sha1.Bytes)
+	filename := getFilename(file, db)
+	body, herr := createRequestBody(sha1sum, filename, clientIP)
 	if herr != nil {
 		return nil, herr
 	}
@@ -192,23 +194,54 @@ func lookupAlternative(file *mdbmodels.File, db *sql.DB) (*mdbmodels.File, error
 	return alts[0], nil
 }
 
-func createRequestBody(file *mdbmodels.File, clientIP string) (*bytes.Buffer, *utils.HttpError) {
+// getFilename returns the final file name displayed to the end user.
+// It takes whatever metadata needed from MDB to determine that.
+// In case of error the original name of the file is returned.
+func getFilename(file *mdbmodels.File, db *sql.DB) string {
+	if file.ContentUnitID.IsZero() {
+		return file.Name
+	}
+
+	cu, err := file.ContentUnit(db).One()
+	if err != nil {
+		log.Errorf("getFilename fetch CU from MDB [%d]: %v", file.ContentUnitID.Int64, err)
+		return file.Name
+	}
+
+	var props map[string]interface{}
+	if err := cu.Properties.Unmarshal(&props); err != nil {
+		log.Errorf("getFilename unmarshal CU properties [%d]: %v", file.ContentUnitID.Int64, err)
+		return file.Name
+	}
+
+	captureDate, cdOK := props["capture_date"]
+	filmDate, fdOK := props["film_date"]
+
+	// film_date and capture_date are not in dispute
+	if !cdOK || !fdOK || captureDate == filmDate {
+		return file.Name
+	}
+
+	return strings.Replace(file.Name, captureDate.(string), filmDate.(string), -1)
+}
+
+func createRequestBody(sha1sum, filename, clientIP string) ([]byte, *utils.HttpError) {
 	data := FileBackendRequest{
-		SHA1:     hex.EncodeToString(file.Sha1.Bytes),
-		Name:     file.Name,
+		SHA1:     sha1sum,
+		Name:     filename,
 		ClientIP: clientIP,
 	}
 
-	b := new(bytes.Buffer)
-	if err := json.NewEncoder(b).Encode(data); err != nil {
-		return nil, utils.NewInternalError(errors.Wrap(err, "json.Encode request"))
+	jsonB, err := json.Marshal(data)
+	if err != nil {
+		return nil, utils.NewInternalError(errors.Wrap(err, "json.Marshal"))
 	}
 
-	return b, nil
+	return jsonB, nil
 }
 
-func callBackend(url string, b *bytes.Buffer) (*http.Response, error) {
-	req, err := http.NewRequest("POST", url, b)
+func callBackend(url string, body []byte) (*http.Response, error) {
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.Wrap(err, "http.NewRequest")
 	}
@@ -245,6 +278,11 @@ func processResponse(res *http.Response) (*FileBackendResponse, *utils.HttpError
 			return nil, utils.NewInternalError(errors.Wrap(err, "json.Decode response"))
 		}
 		return &body, nil
+	}
+
+	// physical file doesn't exists
+	if res.StatusCode == http.StatusNoContent || res.StatusCode == http.StatusNotFound {
+		return nil, utils.NewNotFoundError()
 	}
 
 	// Unexpected response (maybe some 400's ?)

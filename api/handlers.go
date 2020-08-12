@@ -32,7 +32,7 @@ type FileBackendResponse struct {
 }
 
 var filerClient = &http.Client{
-	Timeout: time.Second,
+	Timeout: 10 * time.Second,
 }
 
 func FilesHandler(c *gin.Context) {

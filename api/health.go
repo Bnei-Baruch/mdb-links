@@ -11,9 +11,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/golang/sync/errgroup"
-	"github.com/pkg/errors"
 	"golang.org/x/net/context"
-	"gopkg.in/gin-gonic/gin.v1"
 )
 
 func HealthCheckHandler(c *gin.Context) {
@@ -67,7 +65,7 @@ func HealthCheckHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// Temporary implementation until lib/pq PR is merged.
+// PingDB Temporary implementation until lib/pq PR is merged.
 // See https://github.com/lib/pq/pull/737
 func PingDB(ctx context.Context, db *sql.DB) error {
 	rows, err := db.QueryContext(ctx, "select 1")

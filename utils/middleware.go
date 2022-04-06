@@ -14,7 +14,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
-// Set required resources for handlers in context
+// EnvironmentMiddleware Set required resources for handlers in context
 func EnvironmentMiddleware(mbdDB *sql.DB, backendUrls []string, publicOnly bool, baseUrl string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("MDB_DB", mbdDB)
@@ -25,7 +25,7 @@ func EnvironmentMiddleware(mbdDB *sql.DB, backendUrls []string, publicOnly bool,
 	}
 }
 
-// Recover with error
+// RecoveryMiddleware Recover with error
 func RecoveryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
@@ -103,7 +103,7 @@ func trimGOPATH(name, file string) string {
 	return file
 }
 
-// Handle all errors
+// ErrorHandlingMiddleware Handle all errors
 func ErrorHandlingMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()

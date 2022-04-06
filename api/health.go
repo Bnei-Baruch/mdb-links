@@ -11,7 +11,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/golang/sync/errgroup"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
+	"gopkg.in/gin-gonic/gin.v1"
 )
 
 func HealthCheckHandler(c *gin.Context) {

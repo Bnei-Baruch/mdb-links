@@ -23,7 +23,7 @@ FROM alpine:3.15
 
 ARG work_dir
 WORKDIR /app
-COPY misc/*.sh ./
+COPY ./misc/wait-for /wait-for
 COPY --from=build ${work_dir}/mdb-links .
 
 EXPOSE 8081

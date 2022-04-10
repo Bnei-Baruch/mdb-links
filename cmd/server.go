@@ -2,20 +2,18 @@ package cmd
 
 import (
 	"database/sql"
-	"fmt"
 	"net/url"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/stvp/rollbar"
-	"github.com/volatiletech/sqlboiler/boil"
 	"gopkg.in/gin-contrib/cors.v1"
 	"gopkg.in/gin-gonic/gin.v1"
 
 	"github.com/Bnei-Baruch/mdb-links/api"
+	"github.com/Bnei-Baruch/mdb-links/common"
 	"github.com/Bnei-Baruch/mdb-links/utils"
 	"github.com/Bnei-Baruch/mdb-links/version"
 )
@@ -34,40 +32,36 @@ func serverFn(cmd *cobra.Command, args []string) {
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 
 	log.Info("Setting up connection to MDB")
-	mdbDB, err := sql.Open("postgres", viper.GetString("mdb.url"))
+	mdbDB, err := sql.Open("postgres", common.Config.MDBUrl)
 	utils.Must(err)
 	defer mdbDB.Close()
-	boil.DebugMode = viper.GetString("server.mode") == "debug"
+	//boil.DebugMode = true
 
 	// read and validate config
-	backendUrls := viper.GetStringSlice("file_service.urls")
-	if len(backendUrls) == 0 {
+	if len(common.Config.FilerUrls) == 0 {
 		panic("No file service urls found")
 	}
-	for i, x := range backendUrls {
+	for i, x := range common.Config.FilerUrls {
 		if _, err := url.ParseRequestURI(x); err != nil {
-			panic(fmt.Sprintf("Bad file_service.urls[%d]: %s", i, x))
+			log.Fatalf("Malformed filer url [%d]: %s %s", i, x, err.Error())
 		}
 		log.Debug(x)
 	}
 
-	baseUrl := viper.GetString("server.base-url")
-	if _, err := url.ParseRequestURI(baseUrl); err != nil {
-		panic(fmt.Sprintf("Bad server.base-url: %s", baseUrl))
+	if _, err := url.ParseRequestURI(common.Config.BaseUrl); err != nil {
+		log.Fatalf("Malformed base-url: %s", err.Error())
 	}
 
-	publicOnly := viper.GetBool("permissions.public-only")
-
 	// Setup Rollbar
-	rollbar.Token = viper.GetString("server.rollbar-token")
-	rollbar.Environment = viper.GetString("server.rollbar-environment")
+	rollbar.Token = common.Config.RollbarToken
+	rollbar.Environment = common.Config.RollbarEnvironment
 	rollbar.CodeVersion = version.Version
 
 	// Setup gin
-	gin.SetMode(viper.GetString("server.mode"))
+	gin.SetMode(common.Config.GinMode)
 	router := gin.New()
 	router.Use(
-		utils.EnvironmentMiddleware(mdbDB, backendUrls, publicOnly, baseUrl),
+		utils.EnvironmentMiddleware(mdbDB),
 		utils.ErrorHandlingMiddleware(),
 		cors.New(cors.Config{
 			AllowMethods:     []string{"GET"},
@@ -82,6 +76,6 @@ func serverFn(cmd *cobra.Command, args []string) {
 
 	log.Infoln("Running mdb-links service")
 	if cmd != nil {
-		router.Run(viper.GetString("server.bind-address"))
+		router.Run(common.Config.ListenAddress)
 	}
 }

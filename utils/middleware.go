@@ -8,19 +8,16 @@ import (
 	"runtime/debug"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/stvp/rollbar"
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
 // EnvironmentMiddleware Set required resources for handlers in context
-func EnvironmentMiddleware(mbdDB *sql.DB, backendUrls []string, publicOnly bool, baseUrl string) gin.HandlerFunc {
+func EnvironmentMiddleware(mbdDB *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("MDB_DB", mbdDB)
-		c.Set("BACKEND_URLS", backendUrls)
-		c.Set("PUBLIC_ONLY", publicOnly)
-		c.Set("BASE_URL", baseUrl)
 		c.Next()
 	}
 }

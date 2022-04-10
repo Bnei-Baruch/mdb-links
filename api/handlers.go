@@ -11,11 +11,12 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/queries/qm"
 	"gopkg.in/gin-gonic/gin.v1"
 
+	"github.com/Bnei-Baruch/mdb-links/common"
 	"github.com/Bnei-Baruch/mdb-links/mdb/models"
 	"github.com/Bnei-Baruch/mdb-links/utils"
 )
@@ -75,9 +76,8 @@ func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*Fi
 	}
 
 	db := cp.MustGet("MDB_DB").(*sql.DB)
-	publicOnly := cp.MustGet("PUBLIC_ONLY").(bool)
 
-	file, herr := lookupFile(db, uid, publicOnly)
+	file, herr := lookupFile(db, uid, common.Config.PublicOnly)
 	if herr != nil {
 		return nil, herr
 	}
@@ -85,12 +85,11 @@ func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*Fi
 	// are we redirecting to alternative file ?
 	if file.UID != uid {
 		resp := new(FileBackendResponse)
-		baseUrl := cp.MustGet("BASE_URL").(string)
 		ext := ""
 		if len(s) > 1 {
 			ext = fmt.Sprintf(".%s", strings.Join(s[1:], "."))
 		}
-		resp.Url = fmt.Sprintf("%s%s%s", baseUrl, file.UID, ext)
+		resp.Url = fmt.Sprintf("%s%s%s", common.Config.BaseUrl, file.UID, ext)
 		resp.IsAlternative = true
 		return resp, nil
 	}
@@ -105,8 +104,7 @@ func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*Fi
 
 	var err error
 	var res *http.Response
-	urls := cp.MustGet("BACKEND_URLS").([]string)
-	for i, url := range urls {
+	for i, url := range common.Config.FilerUrls {
 		log.Infof("Calling backend number %d", i+1)
 		res, err = callBackend(url, body)
 		if err != nil || res.StatusCode >= http.StatusMultipleChoices {

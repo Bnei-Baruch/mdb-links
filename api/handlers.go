@@ -13,7 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"gopkg.in/gin-gonic/gin.v1"
 
 	"github.com/Bnei-Baruch/mdb-links/common"
@@ -130,7 +130,7 @@ func lookupFile(db *sql.DB, uid string, publicOnly bool) (*mdbmodels.File, *util
 		mods = append(mods, qm.Where("secure = 0"))
 	}
 
-	file, err := mdbmodels.Files(db, mods...).One()
+	file, err := mdbmodels.Files(mods...).One(db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, utils.NewNotFoundError()
@@ -180,7 +180,7 @@ func lookupAlternative(file *mdbmodels.File, db *sql.DB) (*mdbmodels.File, error
 		qm.OrderBy("created_at desc"),                           // solves most mime_type / sub_type conflicts
 	}
 
-	alts, err := mdbmodels.Files(db, mods...).All()
+	alts, err := mdbmodels.Files(mods...).All(db)
 	if err != nil {
 		return nil, errors.Wrap(err, "fetch alternative files from MDB")
 	}
@@ -200,7 +200,7 @@ func getFilename(file *mdbmodels.File, db *sql.DB) string {
 		return file.Name
 	}
 
-	cu, err := file.ContentUnit(db).One()
+	cu, err := file.ContentUnit().One(db)
 	if err != nil {
 		log.Errorf("getFilename fetch CU from MDB [%d]: %v", file.ContentUnitID.Int64, err)
 		return file.Name

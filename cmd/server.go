@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/stvp/rollbar"
 	"gopkg.in/gin-contrib/cors.v1"

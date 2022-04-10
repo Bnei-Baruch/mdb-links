@@ -8,8 +8,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/stvp/rollbar"
 	"gopkg.in/gin-gonic/gin.v1"
 )

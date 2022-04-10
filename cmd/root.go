@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"github.com/subosito/gotenv"
 
-	"github.com/Bnei-Baruch/mdb-links/utils"
+	"github.com/Bnei-Baruch/mdb-links/common"
 )
 
 var cfgFile string
@@ -31,7 +30,6 @@ func init() {
 }
 
 func initConfig() {
-	if err := utils.InitConfig(cfgFile, ""); err != nil {
-		panic(errors.Wrapf(err, "Could not read config, using: %s", viper.ConfigFileUsed()))
-	}
+	gotenv.Load()
+	common.Init()
 }

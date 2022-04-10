@@ -14,6 +14,8 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"gopkg.in/gin-gonic/gin.v1"
+
+	"github.com/Bnei-Baruch/mdb-links/common"
 )
 
 func HealthCheckHandler(c *gin.Context) {
@@ -29,10 +31,9 @@ func HealthCheckHandler(c *gin.Context) {
 	})
 
 	// ping filer backends
-	urls := c.MustGet("BACKEND_URLS").([]string)
 	var operatingBackends int32
-	for i := range urls {
-		p, _ := url.Parse(urls[i])
+	for _, x := range common.Config.FilerUrls {
+		p, _ := url.Parse(x)
 		p.Path = "/"
 		u := p.String()
 		g.Go(func() error {

@@ -36,6 +36,10 @@ func serverFn(cmd *cobra.Command, args []string) {
 	utils.Must(err)
 	defer mdbDB.Close()
 	//boil.DebugMode = true
+	mdbDB.SetMaxIdleConns(common.Config.MDBMaxIdleConns)
+	mdbDB.SetMaxOpenConns(common.Config.MDBMaxOpenConns)
+	mdbDB.SetConnMaxIdleTime(common.Config.MDBMaxIdleTime)
+	mdbDB.SetConnMaxLifetime(common.Config.MDBConnMaxLifetime)
 
 	// read and validate config
 	if len(common.Config.FilerUrls) == 0 {

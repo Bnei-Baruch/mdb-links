@@ -105,7 +105,7 @@ func handleFile(cp utils.ContextProvider, uidParam string, clientIP string) (*Fi
 	var err error
 	var res *http.Response
 	for i, url := range common.Config.FilerUrls {
-		log.Infof("Calling backend number %d", i+1)
+		log.Infof("Calling backend number %d, filename=%s, sha1sum=%s, clientIP=%s", i+1, filename, sha1sum, clientIP)
 		res, err = callBackend(url, body)
 		if err != nil || res.StatusCode >= http.StatusMultipleChoices {
 			continue
